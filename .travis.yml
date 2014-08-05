@@ -1,0 +1,29 @@
+language: node_js
+node_js:
+- '0.10'
+branches:
+  only:
+  - master
+before_script:
+- npm run setup
+script:
+- set -e
+- git config --global user.email $GH_EMAIL
+- git config --global user.name $GH_USERNAME
+- git remote add deploy https://${GH_TOKEN}@github.com/${GH_USERNAME}/thedebate-api.git > /dev/null 2>&1
+- git checkout -b staging > /dev/null 2>&1
+- git pull deploy staging > /dev/null 2>&1
+- git merge master > /dev/null 2>&1
+- grunt
+- node server.js &
+- npm test
+- ! 'echo "# Build Time: `date`" >> .travis.yml'
+- git add -A
+- git commit -m "Travis build"
+- git push deploy staging > /dev/null 2>&1
+- set +e
+env:
+  global:
+  - secure: hu8XZyK9yGJuUDVUvlO5joeCwBRkB2GkdtbqZ+jHD35aRPwgJYDoW5cwYWY8LuPwG4kcS31UIyPVD2M+042C+QGR85VcTpfNoUOrp9ANhx0cZLllbZioe/qHypJ+yDg8eM/jJ3J+6SHMnya2dEeGcMVOScoRdthjtbcBubCqn/I=
+  - secure: XyOcBR1yrZErxh02S4qSCeoZMMrKJYk8pkFtufIJnmiqXgF66GMLPj6mf/h/4lhWtMSBzeS6UqXZ5fPfdcgAyqMxN5JcEFkmPPJEc513/TntN/nkjDQ3baWTejLhlGHs3KtW9qmJvrIN90nCtsP8SQEyL7nKhFPLyjsj7VLuMoU=
+  - secure: Ga085E4aeqq6sV1oYul1H/fbI0Y/2gJb6YIFbKftkd1JSvp7peq4S5lp/Q1rZUci+NwZE4OksbVgy45DxCJ/v2mPfIo3XNRIVQy+E0o6Pen4BW1bGVBKgXcZiWY17qb9M+JKy7LaoqmbrkQ7jY0SFj8csBNT72kmbVqX9qUmU/0=

@@ -1,0 +1,23 @@
+{
+  "name": "thedebate-api",
+  "version": "0.0.1",
+  "description": "thedebate api\r =========",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marclitchfield/thedebate-api.git"
+  },
+  "scripts": {
+    "setup": "npm install -g grunt-cli mocha supervisor",
+    "test": ""
+  },
+  "dependencies": {
+    "express": "~4.6.1"
+  },
+  "devDependencies": {
+    "lodash": "~2.4.1",
+    "grunt": "~0.4.5",
+    "grunt-contrib-jshint": "~0.10.0",
+    "grunt-contrib-watch": "~0.6.1"
+  }
+}
