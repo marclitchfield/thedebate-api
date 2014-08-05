@@ -6,8 +6,6 @@ thedebate-api
 
 Web API for the debate
 
-  https://github.com/marclitchfield/thedebate-web
-
 
 ## Development Setup
 
@@ -26,3 +24,9 @@ Run the server and watch for file changes
 ```
 supervisor -w . server.js
 ```
+
+
+## Components
+
+- Web: https://github.com/marclitchfield/thedebate-web
+- API: https://github.com/marclitchfield/thedebate-api
