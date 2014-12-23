@@ -3,7 +3,7 @@ var debates = require('../stores/debates');
 module.exports = function(server) {
   server.route({ 
     method: 'GET',
-    path: '/debates',
+    path: '/api/debates',
     handler: function (request, reply) {
       debates.list(reply);
     }
@@ -11,7 +11,7 @@ module.exports = function(server) {
 
   server.route({
     method: 'GET',
-    path: '/debates/{id}',
+    path: '/api/debates/{id}',
     handler: function (request, reply) {
       debates.get(reply, request.params.id);
     }
@@ -19,7 +19,7 @@ module.exports = function(server) {
 
   server.route({
     method: 'POST',
-    path: '/debates',
+    path: '/api/debates',
     handler: function (request, reply) {
       debates.create(reply, request.payload);
     }

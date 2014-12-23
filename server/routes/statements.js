@@ -3,7 +3,7 @@ var statements = require('../stores/statements');
 module.exports = function(server) {
   server.route({ 
     method: 'GET',
-    path: '/statements/{id}',
+    path: '/api/statements/{id}',
     handler: function (request, reply) {
       statements.get(reply, request.params.id);
     }
@@ -11,7 +11,7 @@ module.exports = function(server) {
 
   server.route({ 
     method: 'POST',
-    path: '/statements',
+    path: '/api/statements',
     handler: function (request, reply) {
       statements.create(reply, request.payload);
     }
@@ -19,7 +19,7 @@ module.exports = function(server) {
 
   server.route({
     method: 'GET',
-    path: '/statements/{id}/responses/{type?}',
+    path: '/api/statements/{id}/responses/{type?}',
     handler: function (request, reply) {
       statements.responses.list(reply, request.params.id, request.params.type);
     }
@@ -27,7 +27,7 @@ module.exports = function(server) {
 
   server.route({ 
     method: 'POST',
-    path: '/statements/{id}/responses',
+    path: '/api/statements/{id}/responses',
     handler: function (request, reply) {
       statements.responses.create(reply, request.params.id, request.payload);
     }
