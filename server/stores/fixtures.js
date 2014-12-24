@@ -22,6 +22,7 @@ module.exports = (function() {
       id: ++id,
       score: data.score === undefined ? id : data.score,
       title: data.title || ('debate ' + id),
+      statements: data.statements || [],
 
       summary: function() {
         return {
@@ -34,14 +35,14 @@ module.exports = (function() {
       detail: function() {
         return _.merge(this.summary(), {
           statements: this.statements.map(function(statement) {
-            return statement.summary();
+            return statements[statement.id].summary();
           })
         });
       }
     };
 
+    debates[debate.id] = debate;
     debate.statements = data.title ? [] : _.range(3).map(function() { return createStatement({ debate: debate, level: 0 }); });
-    debates[debate.id.toString()] = debate;
     return debate;
   }
 
@@ -74,12 +75,12 @@ module.exports = (function() {
 
       detail: function() {
         return _.merge(this.summary(), {
-          debate: this.debate === undefined ? undefined : this.debate.summary(),
+          debate: debates[data.debate.id].summary(),
           chain: this.chain === undefined ? undefined : this.chain.map(function(parent) {
-            return parent.summary();
+            return statements[parent.id].summary();
           }),
           responses: _.map(this.responses, function(response) {
-            return response.summary();
+            return statements[response.id].summary();
           })
         });
       }
@@ -87,9 +88,16 @@ module.exports = (function() {
 
     if (data.parent !== undefined) {
       parents[statement.id] = data.parent;
+      statements[data.parent.id].responses.push(statement);
     }
 
+    if (statement.debate !== undefined) {
+      debates[statement.debate.id].statements.push(statement);
+    }
+
+    statements[statement.id] = statement;
     statement.chain = buildChain(statement.id);
+
     statement.body = data.body || ((data.type || 'statement') + ' ' + statement.id +  
       ' [' + statement.chain.map(function(p) { return p.id; }).reverse().join('.') + ']' + 
       ' at level ' + ((data.level || 0)+1) +
@@ -108,7 +116,6 @@ module.exports = (function() {
       });
     }
 
-    statements[statement.id.toString()] = statement;
     return statement;
   }
 

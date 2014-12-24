@@ -7,7 +7,7 @@ module.exports = function() {
     },
 
     create: function(cb, statement) {
-      cb(fixtures.statements.create(statement));
+      cb(fixtures.statements.create(statement).detail());
     },
 
     responses: {
@@ -20,7 +20,7 @@ module.exports = function() {
       },
 
       create: function(cb, id, response) {
-        cb(fixtures.statements.create(response));
+        cb(fixtures.statements.create(response).detail());
       }
     }
   };

@@ -11,7 +11,7 @@ module.exports = function(server) {
 
   server.route({
     method: 'GET',
-    path: '/api/debates/{id}',
+    path: '/api/debate/{id}',
     handler: function (request, reply) {
       debates.get(reply, request.params.id);
     }
