@@ -12,11 +12,15 @@ server.register({
   options: {
     reporters: [{
       reporter: require('good-console'),
-      args:[{ log: '*', response: '*' }]
+      args:[{ error: '*'}, { log: ['*'], response: '*' }]
     }]
   }
 }, function (err) {
   if (err) { throw err; }
+
+  server.on('internalError', function (request, err) {
+    server.log(err.data.stack);
+  }); 
 
   server.start(function () {
     server.log('info', 'Server running at: ' + server.info.uri);
