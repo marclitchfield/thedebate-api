@@ -1,20 +1,18 @@
-var fixtures = require('./fixtures');
-var _ = require('lodash');
+var mongoose = require('mongoose');
+var Debate = mongoose.model('Debate', require('../models/debate'));
 
 module.exports = function() {
   return {
     list: function(cb) {
-      cb(_.values(fixtures.debates.all).map(function(debate) {
-        return debate.summary();
-      }));
+      Debate.find({}, cb);
     },
 
     get: function(cb, id) {
-      cb(fixtures.debates.all[id].detail());
+      Debate.findById(id, cb);
     },
 
     create: function(cb, debate) {
-      cb(fixtures.debates.create(debate));
+      Debate.fromJSON(debate).save(cb);
     }
   };
 }();

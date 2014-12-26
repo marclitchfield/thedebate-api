@@ -1,8 +1,11 @@
 var Hapi = require('hapi');
 var Good = require('good');
+var mongoose = require('mongoose');
 
 var server = new Hapi.Server();
 server.connection({ port: 9004 });
+
+mongoose.connect('mongodb://localhost/thedebate');
 
 require('./routes/debates')(server);
 require('./routes/statements')(server);

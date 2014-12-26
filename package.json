@@ -30,6 +30,7 @@
   "dependencies": {
     "hapi": "~8.0.0",
     "good": "~5.1.0",
-    "good-console": "~4.0.0"
+    "good-console": "~4.0.0",
+    "mongoose": "~3.8.21"
   }
 }
