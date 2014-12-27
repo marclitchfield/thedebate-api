@@ -31,21 +31,17 @@ Statement.methods.toJSON = function() {
 };
 
 Statement.statics.fromJSON = function(obj) {
-  var statement = new (mongoose.model('Statement', Statement))({
-    body: obj.body,
-    score: obj.score || 0,
-    scores: obj.scores,
-    type: obj.type,
-    upvotes: obj.upvotes || 0,
-    debate: obj.debate.id,
-    chain: (obj.chain || []).map(function(statement) { return statement.id; }),
-    responses: (obj.responses || []).map(function(response) { return response.id; })
-  });
+  obj.debate = obj.debate.id;
+  obj.chain = (obj.chain || []).map(function(statement) { return statement.id; });
+  obj.responses = (obj.responses || []).map(function(response) { return response.id; });
+
+  var statement = new (mongoose.model('Statement', Statement))(obj);
 
   if (obj.id) {
     statement._id = new ObjectId(obj.id);
   }
 
+  delete statement.id;
   return statement;
 };
 

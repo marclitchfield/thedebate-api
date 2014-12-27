@@ -23,18 +23,16 @@ Debate.methods.toJSON = function() {
 };
 
 Debate.statics.fromJSON = function(obj) {
-  var debate = new (mongoose.model('Debate', Debate))({
-    title: obj.title,
-    score: obj.score,
-    statements: (obj.statements || []).map(function(statement) {
+  var debate = new (mongoose.model('Debate', Debate))(obj);
+  debate.statements = (obj.statements || []).map(function(statement) {
       return Statement.fromJSON(statement);
-    })
-  });
+    });
 
   if (obj.id) {
     debate._id = new ObjectId(obj.id);
   }
 
+  delete debate.id;
   return debate;
 };
 
