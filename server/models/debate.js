@@ -5,7 +5,7 @@ var Statement = require('./statement');
 
 var Debate = new Schema({
   title: String,
-  score: Number,
+  score: { type: Number, default: 0 },
   statements: [{ type: ObjectId, ref:'Statement'}]
 });
 

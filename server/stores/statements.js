@@ -3,10 +3,7 @@ var Statement = mongoose.model('Statement', require('../models/statement'));
 var Debate = mongoose.model('Debate', require('../models/debate'));
 
 function populate() {
-  this.populate('debate')
-    .populate('chain')
-    .populate('responses');
-
+  this.populate('debate').populate('chain').populate('responses');
   return this;
 }
 
@@ -64,8 +61,25 @@ function saveUpvote(cb) {
     if (err) { return cb(err, undefined); }
     statement.upvotes += 1;
     statement.score += 1;
-    statement.save(cb);
+    statement.save(updateParentScores(cb, statement));
   };
+}
+
+function updateParentScores(cb, statement) {
+  if ((statement.chain || []).length === 0) {
+    return cb(undefined, statement);
+  }
+
+  var parent = statement.chain[statement.chain.length - 1];
+  var query = { _id: parent._id };
+  var update = { '$inc': {} };
+  update.$inc['scores.' + statement.type] = 1;
+
+  Statement.findOneAndUpdate(query, update, function(err, parent) {
+    statement.chain[statement.chain.length - 1] = parent;
+    console.log('returning statement', statement.chain);
+    cb(err, statement);
+  });
 }
 
 function retrieveResponses(cb, type) {
