@@ -33,4 +33,12 @@ module.exports = function(server) {
     }
   });
 
+  server.route({
+    method: 'POST',
+    path: '/api/statement/{id}/upvote',
+    handler: function(request, reply) {
+      statements.upvote(reply, request.params.id);
+    }
+  });
+
 };

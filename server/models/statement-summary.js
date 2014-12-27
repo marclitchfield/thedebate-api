@@ -13,6 +13,7 @@ var StatementSummary = new Schema({
 });
 
 StatementSummary.methods.toJSON = function() {
+  console.log('StatementSummary.toJSON', this);
   var summary = {
     id: this._id,
     body: this.body,

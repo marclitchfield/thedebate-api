@@ -1,21 +1,22 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-var StatementSummary = require('./statement-summary');
 var ObjectId = Schema.Types.ObjectId;
+var StatementSummary = require('./statement-summary');
 
 var Statement = new Schema({
   body: String,
-  score: Number,
+  score: { type: Number, default: 0 },
   type: String,
+  upvotes: { type: Number, default: 0 },
   scores: {
-    support: Number,
-    opposition: Number,
-    objection: Number
+    support: { type: Number, default: 0 },
+    opposition: { type: Number, default: 0 },
+    objection: { type: Number, default: 0 },
   },
   debate: {
     _id: ObjectId,
     title: String,
-    score: Number
+    score: { type: Number, default: 0 },
   },
   chain: [StatementSummary],
   responses: [StatementSummary]
@@ -27,6 +28,7 @@ Statement.methods.toJSON = function() {
     body: this.body,
     score: this.score,
     type: this.type,
+    upvotes: this.upvotes || 0,
     scores: {
       support: this.scores ? this.scores.support : 0,
       opposition: this.scores ? this.scores.opposition : 0,
@@ -52,6 +54,7 @@ Statement.statics.fromJSON = function(obj) {
     score: obj.score || 0,
     scores: obj.scores,
     type: obj.type,
+    upvotes: obj.upvotes || 0,
     debate: {
       _id: obj.debate.id,
       title: obj.debate.title,

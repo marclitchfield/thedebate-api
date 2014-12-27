@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
-var StatementSummary = require('./statement-summary');
 var Schema = mongoose.Schema;
 var ObjectId = Schema.Types.ObjectId;
+var StatementSummary = require('./statement-summary');
 
 var Debate = new Schema({
   title: String,
@@ -10,6 +10,7 @@ var Debate = new Schema({
 });
 
 Debate.methods.toJSON = function() {
+  console.log('Debate.toJSON', this);
   return {
     id: this._id,
     title: this.title,
@@ -19,7 +20,11 @@ Debate.methods.toJSON = function() {
         id: statement._id,
         body: statement.body,
         score: statement.score,
-        scores: statement.scores
+        scores: {
+          support: statement.scores.support,
+          opposition: statement.scores.opposition,
+          objection: statement.scores.objection
+        }
       };
     })
   };

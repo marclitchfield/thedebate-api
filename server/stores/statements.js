@@ -12,6 +12,10 @@ module.exports = function() {
       Statement.fromJSON(statement).save(onStatementSaved(cb));
     },
 
+    upvote: function(cb, id) {
+      Statement.findById(id, saveUpvote(cb));
+    },
+
     responses: {
       list: function(cb, id, type) {
         Statement.findById(id, retrieveResponses(cb, type));
@@ -50,6 +54,15 @@ function addStatementToDebate(cb, statement) {
     debate.save(function(err) {
       cb(err, statement);
     });  
+  };
+}
+
+function saveUpvote(cb) {
+  return function(err, statement) {
+    if (err) { return cb(err, undefined); }
+    statement.upvotes += 1;
+    statement.score += 1;
+    statement.save(cb);
   };
 }
 
