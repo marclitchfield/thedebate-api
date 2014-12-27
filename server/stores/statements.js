@@ -21,7 +21,7 @@ module.exports = function() {
     },
 
     upvote: function(cb, id) {
-      Statement.findById(id, saveUpvote(cb));
+      populate.call(Statement.findById(id)).exec(saveUpvote(cb));
     },
 
     responses: {
