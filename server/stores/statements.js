@@ -1,11 +1,19 @@
 var mongoose = require('mongoose');
-var Debate = mongoose.model('Debate', require('../models/debate'));
 var Statement = mongoose.model('Statement', require('../models/statement'));
+var Debate = mongoose.model('Debate', require('../models/debate'));
+
+function populate() {
+  this.populate('debate')
+    .populate('chain')
+    .populate('responses');
+
+  return this;
+}
 
 module.exports = function() {
   return {
     get: function(cb, id) {
-      Statement.findById(id, cb);
+      populate.call(Statement.findById(id)).exec(cb);
     },
 
     create: function(cb, statement) {
@@ -18,17 +26,11 @@ module.exports = function() {
 
     responses: {
       list: function(cb, id, type) {
-        Statement.findById(id, retrieveResponses(cb, type));
+        populate.call(Statement.findById(id)).exec(retrieveResponses(cb, type));
       },
 
       create: function(cb, id, response) {
-        Statement.findById(response.parent.id, function(err, parent) {
-          if (err) { return cb(err, undefined); }
-
-          response.chain = parent.chain.concat(parent.summary());
-
-          Statement.fromJSON(response).save(addResponseToParent(cb, parent));
-        });
+        populate.call(Statement.findById(response.parent.id)).exec(saveResponse(cb, Statement.fromJSON(response)));
       }
     }
   };
@@ -41,7 +43,7 @@ function onStatementSaved(cb) {
     if (statement.parent) {
       cb(err, statement);
     } else {
-      Debate.findById(statement.debate._id, addStatementToDebate(cb, statement));
+      Debate.findById(statement.debate, addStatementToDebate(cb, statement));
     }
   };
 }
@@ -50,7 +52,7 @@ function addStatementToDebate(cb, statement) {
   return function(err, debate) {
     if (err) { return cb(err, undefined); }
 
-    debate.statements.push(statement);
+    debate.statements.push(statement.id);
     debate.save(function(err) {
       cb(err, statement);
     });  
@@ -76,11 +78,21 @@ function retrieveResponses(cb, type) {
   };
 }
 
+function saveResponse(cb, response) {
+  return function(err, parent) {
+    if (err) { return cb(err, undefined); }
+
+    // Inherit the parent's chain
+    response.chain = parent.chain.concat(parent.id);
+    response.save(addResponseToParent(cb, parent));
+  };
+}
+
 function addResponseToParent(cb, parent) {
   return function(err, response) {
     if (err) { return cb(err, undefined); }
 
-    parent.responses.push(response);
+    parent.responses.push(response.id);
     parent.save(function(err) {
       cb(err, response);
     });

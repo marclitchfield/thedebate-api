@@ -1,33 +1,25 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var ObjectId = Schema.Types.ObjectId;
-var StatementSummary = require('./statement-summary');
+var Statement = require('./statement');
 
 var Debate = new Schema({
   title: String,
   score: Number,
-  statements: [StatementSummary]
+  statements: [{ type: ObjectId, ref:'Statement'}]
 });
 
 Debate.methods.toJSON = function() {
-  console.log('Debate.toJSON', this);
-  return {
-    id: this._id,
-    title: this.title,
-    score: this.score,
-    statements: this.statements.map(function(statement) {
-      return {
-        id: statement._id,
-        body: statement.body,
-        score: statement.score,
-        scores: {
-          support: statement.scores.support,
-          opposition: statement.scores.opposition,
-          objection: statement.scores.objection
-        }
-      };
-    })
-  };
+  var obj = this.toObject();
+  obj.id = obj._id;
+  delete obj._id;
+  delete obj.__v;
+
+  obj.statements = this.statements.map(function(statement) {
+    return statement.toJSON();
+  });
+
+  return obj;
 };
 
 Debate.statics.fromJSON = function(obj) {
@@ -35,7 +27,7 @@ Debate.statics.fromJSON = function(obj) {
     title: obj.title,
     score: obj.score,
     statements: (obj.statements || []).map(function(statement) {
-      return StatementSummary.fromJSON(statement);
+      return Statement.fromJSON(statement);
     })
   });
 
