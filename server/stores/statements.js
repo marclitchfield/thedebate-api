@@ -18,7 +18,9 @@ module.exports = function() {
     },
 
     upvote: function(cb, id) {
-      populate.call(Statement.findById(id)).exec(saveUpvote(cb));
+      var query = { _id: id };
+      var update = { '$inc': { upvotes: 1, score: 1, 'scores.support': 1 } };
+      populate.call(Statement.findOneAndUpdate(query, update)).exec(updateParentScores(cb));
     },
 
     responses: {
@@ -56,30 +58,25 @@ function addStatementToDebate(cb, statement) {
   };
 }
 
-function saveUpvote(cb) {
+function updateParentScores(cb) {
   return function(err, statement) {
     if (err) { return cb(err, undefined); }
-    statement.upvotes += 1;
-    statement.score += 1;
-    statement.save(updateParentScores(cb, statement));
+
+    if ((statement.chain || []).length === 0) {
+      return cb(undefined, statement);
+    }
+
+    var parent = statement.chain[statement.chain.length - 1];
+    var query = { _id: parent._id };
+    var update = { '$inc': {} };
+    update.$inc['scores.' + statement.type] = 1;
+
+    Statement.findOneAndUpdate(query, update, function(err, parent) {
+      statement.chain[statement.chain.length - 1] = parent;
+      console.log('returning statement', statement.chain);
+      cb(err, statement);
+    });
   };
-}
-
-function updateParentScores(cb, statement) {
-  if ((statement.chain || []).length === 0) {
-    return cb(undefined, statement);
-  }
-
-  var parent = statement.chain[statement.chain.length - 1];
-  var query = { _id: parent._id };
-  var update = { '$inc': {} };
-  update.$inc['scores.' + statement.type] = 1;
-
-  Statement.findOneAndUpdate(query, update, function(err, parent) {
-    statement.chain[statement.chain.length - 1] = parent;
-    console.log('returning statement', statement.chain);
-    cb(err, statement);
-  });
 }
 
 function retrieveResponses(cb, type) {
