@@ -18,9 +18,14 @@ module.exports = function() {
     },
 
     upvote: function(cb, id) {
-      var query = { _id: id };
-      var update = { '$inc': { upvotes: 1, score: 1, 'scores.support': 1 } };
-      populate.call(Statement.findOneAndUpdate(query, update)).exec(updateParentScores(cb));
+      var update = { 
+        '$inc': { 
+          'upvotes': 1, 
+          'score': 1, 
+          'scores.support': 1 
+        } 
+      };
+      populate.call(Statement.findOneAndUpdate({_id: id}, update)).exec(updateParentScores(cb));
     },
 
     responses: {

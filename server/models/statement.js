@@ -4,8 +4,8 @@ var ObjectId = Schema.Types.ObjectId;
 
 var Statement = new Schema({
   body: String,
-  score: { type: Number, default: 0 },
   type: String,
+  score: { type: Number, default: 0 },
   upvotes: { type: Number, default: 0 },
   scores: {
     support: { type: Number, default: 0 },
