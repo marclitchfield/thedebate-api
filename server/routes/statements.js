@@ -5,7 +5,7 @@ module.exports = function(server) {
     method: 'GET',
     path: '/api/statement/{id}',
     handler: function (request, reply) {
-      statements.get(reply, request.params.id);
+      statements.get(request.params.id, reply);
     }
   });
 
@@ -13,7 +13,7 @@ module.exports = function(server) {
     method: 'POST',
     path: '/api/statements',
     handler: function (request, reply) {
-      statements.create(reply, request.payload);
+      statements.create(request.payload, reply);
     }
   });
 
@@ -21,7 +21,7 @@ module.exports = function(server) {
     method: 'GET',
     path: '/api/statement/{id}/responses/{type?}',
     handler: function (request, reply) {
-      statements.responses.list(reply, request.params.id, request.params.type);
+      statements.responses.list(request.params.id, request.params.type, reply);
     }
   });
 
@@ -29,7 +29,7 @@ module.exports = function(server) {
     method: 'POST',
     path: '/api/statement/{id}/responses',
     handler: function (request, reply) {
-      statements.responses.create(reply, request.params.id, request.payload);
+      statements.responses.create(request.params.id, request.payload, reply);
     }
   });
 
@@ -37,7 +37,7 @@ module.exports = function(server) {
     method: 'POST',
     path: '/api/statement/{id}/upvote',
     handler: function(request, reply) {
-      statements.upvote(reply, request.params.id);
+      statements.upvote(request.params.id, reply);
     }
   });
 

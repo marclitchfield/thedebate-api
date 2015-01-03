@@ -13,7 +13,7 @@ module.exports = function(server) {
     method: 'GET',
     path: '/api/debate/{id}',
     handler: function (request, reply) {
-      debates.get(reply, request.params.id);
+      debates.get(request.params.id, reply);
     }
   });
 
@@ -21,7 +21,7 @@ module.exports = function(server) {
     method: 'POST',
     path: '/api/debates',
     handler: function (request, reply) {
-      debates.create(reply, request.payload);
+      debates.create(request.payload, reply);
     }
   }); 
 };

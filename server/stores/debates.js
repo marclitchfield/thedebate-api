@@ -7,11 +7,11 @@ module.exports = function() {
       Debate.find({}).populate('statements').exec(cb);
     },
 
-    get: function(cb, id) {
+    get: function(id, cb) {
       Debate.findById(id).populate('statements').exec(cb);
     },
-
-    create: function(cb, debate) {
+ 
+    create: function(debate, cb) {
       Debate.fromJSON(debate).save(cb);
     }
   };

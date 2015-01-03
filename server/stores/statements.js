@@ -2,22 +2,22 @@ var mongoose = require('mongoose');
 var Statement = mongoose.model('Statement', require('../models/statement'));
 var Debate = mongoose.model('Debate', require('../models/debate'));
 
-function populate() {
-  this.populate('debate').populate('chain').populate('responses');
-  return this;
+function populate(query) {
+  query.populate('debate').populate('chain').populate('responses');
+  return query;
 }
 
 module.exports = function() {
   return {
-    get: function(cb, id) {
-      populate.call(Statement.findById(id)).exec(cb);
+    get: function(id, cb) {
+      populate(Statement.findById(id)).exec(cb);
     },
 
-    create: function(cb, statement) {
+    create: function(statement, cb) {
       Statement.fromJSON(statement).save(onStatementSaved(cb));
     },
 
-    upvote: function(cb, id) {
+    upvote: function(id, cb) {
       var update = { 
         '$inc': { 
           'upvotes': 1, 
@@ -25,16 +25,17 @@ module.exports = function() {
           'scores.support': 1 
         } 
       };
-      populate.call(Statement.findOneAndUpdate({_id: id}, update)).exec(updateParentScores(cb));
+      populate(Statement.findOneAndUpdate({_id: id}, update)).exec(updateParentScores(cb));
     },
 
     responses: {
-      list: function(cb, id, type) {
-        populate.call(Statement.findById(id)).exec(retrieveResponses(cb, type));
+      list: function(id, type, cb) {
+        populate(Statement.findById(id)).exec(retrieveResponses(type, cb));
       },
 
-      create: function(cb, id, response) {
-        populate.call(Statement.findById(response.parent.id)).exec(saveResponse(cb, Statement.fromJSON(response)));
+      create: function(id, response, cb) {
+        populate(Statement.findById(response.parent.id)).exec(
+          saveResponse(Statement.fromJSON(response), cb));
       }
     }
   };
@@ -47,12 +48,12 @@ function onStatementSaved(cb) {
     if (statement.parent) {
       cb(err, statement);
     } else {
-      Debate.findById(statement.debate, addStatementToDebate(cb, statement));
+      Debate.findById(statement.debate, addStatementToDebate(statement, cb));
     }
   };
 }
 
-function addStatementToDebate(cb, statement) {
+function addStatementToDebate(statement, cb) {
   return function(err, debate) {
     if (err) { return cb(err, undefined); }
 
@@ -78,13 +79,12 @@ function updateParentScores(cb) {
 
     Statement.findOneAndUpdate(query, update, function(err, parent) {
       statement.chain[statement.chain.length - 1] = parent;
-      console.log('returning statement', statement.chain);
       cb(err, statement);
     });
   };
 }
 
-function retrieveResponses(cb, type) {
+function retrieveResponses(type, cb) {
   return function(err, statement) {
     if (err) { return cb(err, undefined); }
 
@@ -94,17 +94,17 @@ function retrieveResponses(cb, type) {
   };
 }
 
-function saveResponse(cb, response) {
+function saveResponse(response, cb) {
   return function(err, parent) {
     if (err) { return cb(err, undefined); }
 
     // Inherit the parent's chain
     response.chain = parent.chain.concat(parent.id);
-    response.save(addResponseToParent(cb, parent));
+    response.save(addResponseToParent(parent, cb));
   };
 }
 
-function addResponseToParent(cb, parent) {
+function addResponseToParent(parent, cb) {
   return function(err, response) {
     if (err) { return cb(err, undefined); }
 
