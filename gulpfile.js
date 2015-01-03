@@ -2,7 +2,8 @@ var gulp = require('gulp'),
   jshint = require('gulp-jshint'),
   changed = require('gulp-changed'),
   del = require('del'),
-  path = require('path');
+  path = require('path'),
+  config = require('./package.json');
 
 var testUrl = 'http://localhost:9002';
 
@@ -14,11 +15,7 @@ var paths = {
   },
   server: {
     root: 'server/',
-    files: ['server/**/*.js'],
-    // node_modules that the server application depends on
-    modules: [
-      'hapi',
-    ]
+    files: ['server/**/*.js']
   }
 };
 
@@ -38,7 +35,7 @@ gulp.task('server', ['server node_modules'], function() {
 
 gulp.task('server node_modules', function() {
   // copy node_modules listed in paths.server.modules to node_modules in paths.dist.server
-  return gulp.src(paths.server.modules.map(function(m) {
+  return gulp.src(Object.keys(config.dependencies).map(function(m) {
     return path.join('node_modules', m, '/**');
   }), { base: './' })
   .pipe(changed(paths.dist.server))
