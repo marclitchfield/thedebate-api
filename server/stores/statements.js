@@ -9,10 +9,12 @@ var ObjectionThresholds = {
   logic: 10
 };
 
+var HiddenObjectionTypes = ['junk'];
+
 function populate(query) {
   query.populate('debate').populate('chain').populate({
     path: 'responses',
-    match: { tag: { $nin: ['junk'] } }
+    match: { tag: { $nin: HiddenObjectionTypes } }
   });
   return query;
 }
@@ -86,19 +88,50 @@ function updateParentScores(cb) {
     var query = { _id: parent._id };
     var update = {
       '$inc': {
-        'score': scoreDelta(statement)
+        'score': scoreDelta(statement,1)
       }
     };
     update.$inc['scores.' + statement.type] = 1;
 
-    if (statement.type === 'objection' && (statement.score+1) >= ObjectionThresholds[statement.objection.type]) {
+    if (statement.type === 'objection' && 
+          statement.score >= ObjectionThresholds[statement.objection.type] && 
+          !statement.tag) {
       update = applyObjectionEffects(statement, update);
     }
 
-    Statement.findOneAndUpdate(query, update, function(err) {
-      cb(err, statement);
+    populate(Statement.findOneAndUpdate(query, update)).exec(function(err, parent) {
+      if (err) { return cb(err, undefined); }
+
+      statement.chain[statement.chain.length - 1] = parent;
+
+      if (parent.chain && !statement.tag && HiddenObjectionTypes.indexOf(parent.tag) > -1) {
+        var grandParent = parent.chain[parent.chain.length - 1];
+        reverseStatementEffects(grandParent, parent, statement, cb);
+      } else {
+        cb(err, statement);
+      }
     });
   };
+}
+
+function reverseStatementEffects(parentId, removedStatement, returnStatement, cb) {
+  var query = { _id: parentId };
+  var update = {
+    '$inc': {
+      'score': -scoreDelta(removedStatement, removedStatement.score),
+      'scores.support': removedStatement.type === 'support' ? -removedStatement.score : 0,
+      'scores.opposition': removedStatement.type === 'opposition' ? -removedStatement.score : 0,
+      'scores.objection': removedStatement.type === 'objection' ? -removedStatement.score : 0
+    }
+  };
+
+  Statement.findOneAndUpdate(query, update, function(err, grandParent) {
+    if (returnStatement.chain && returnStatement.chain.length > 1) {
+      returnStatement.chain[returnStatement.chain.length - 2] = grandParent;
+      console.log('return', JSON.stringify(returnStatement, undefined, 2));
+    }
+    cb(err, returnStatement);
+  });
 }
 
 function applyObjectionEffects(statement, update) {
@@ -111,12 +144,12 @@ function applyObjectionEffects(statement, update) {
   }[statement.objection.type]);
 }
 
-function scoreDelta(statement) {
+function scoreDelta(statement, quantity) {
   if (statement.type === 'support') {
-    return 1;
+    return quantity;
   }
   if (statement.type === 'opposition') {
-    return -1;
+    return -quantity;
   }
   return 0;
 }

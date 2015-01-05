@@ -42,6 +42,10 @@ Statement.statics.fromJSON = function(obj) {
   obj.chain = (obj.chain || []).map(function(statement) { return statement.id; });
   obj.responses = (obj.responses || []).map(function(response) { return response.id; });
 
+  if (obj.type !== 'objection') {
+    delete obj.objection;
+  }
+
   var statement = new (mongoose.model('Statement', Statement))(obj);
 
   if (obj.id) {
