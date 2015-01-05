@@ -1,9 +1,19 @@
+var _ = require('lodash');
 var mongoose = require('mongoose');
 var Statement = mongoose.model('Statement', require('../models/statement'));
 var Debate = mongoose.model('Debate', require('../models/debate'));
 
+var ObjectionThresholds = {
+  junk: 5,
+  edit: 5,
+  logic: 10
+};
+
 function populate(query) {
-  query.populate('debate').populate('chain').populate('responses');
+  query.populate('debate').populate('chain').populate({
+    path: 'responses',
+    match: { tag: { $nin: ['junk'] } }
+  });
   return query;
 }
 
@@ -81,11 +91,24 @@ function updateParentScores(cb) {
     };
     update.$inc['scores.' + statement.type] = 1;
 
-    Statement.findOneAndUpdate(query, update, function(err, parent) {
-      statement.chain[statement.chain.length - 1] = parent;
+    if (statement.type === 'objection' && (statement.score+1) >= ObjectionThresholds[statement.objection.type]) {
+      update = applyObjectionEffects(statement, update);
+    }
+
+    Statement.findOneAndUpdate(query, update, function(err) {
       cb(err, statement);
     });
   };
+}
+
+function applyObjectionEffects(statement, update) {
+  return _.merge(update, {
+    edit: {},
+    junk: {
+      '$set': { tag: 'junk' }
+    },
+    logic: {}
+  }[statement.objection.type]);
 }
 
 function scoreDelta(statement) {

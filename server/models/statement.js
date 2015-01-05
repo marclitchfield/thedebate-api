@@ -5,6 +5,7 @@ var ObjectId = Schema.Types.ObjectId;
 var Statement = new Schema({
   body: String,
   type: String,
+  tag: String,
   score: { type: Number, default: 0 },
   upvotes: { type: Number, default: 0 },
   scores: {

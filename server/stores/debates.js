@@ -1,14 +1,22 @@
 var mongoose = require('mongoose');
 var Debate = mongoose.model('Debate', require('../models/debate'));
 
+function populate(query) {
+  query.populate({
+    path: 'statements',
+    match: { tag: { $nin: ['junk'] } }
+  });
+  return query;
+}
+
 module.exports = function() {
   return {
     list: function(cb) {
-      Debate.find({}).populate('statements').exec(cb);
+      populate(Debate.find({})).exec(cb);
     },
 
     get: function(id, cb) {
-      Debate.findById(id).populate('statements').exec(cb);
+      populate(Debate.findById(id)).exec(cb);
     },
  
     create: function(debate, cb) {
