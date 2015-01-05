@@ -14,7 +14,13 @@ var Statement = new Schema({
   },
   debate: { type: ObjectId, ref: 'Debate' },
   chain: [{ type: ObjectId, ref: 'Statement' }],
-  responses: [{ type: ObjectId, ref: 'Statement' }]
+  responses: [{ type: ObjectId, ref: 'Statement' }],
+  objection: {
+    type: { type: String },
+    edit: { version: { type: Number } },
+    junk: {},
+    logic: { fallacy: { type: String } }
+  }
 });
 
 Statement.methods.toJSON = function() {
