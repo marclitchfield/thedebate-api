@@ -74,7 +74,11 @@ function updateParentScores(cb) {
 
     var parent = statement.chain[statement.chain.length - 1];
     var query = { _id: parent._id };
-    var update = { '$inc': {} };
+    var update = {
+      '$inc': {
+        'score': scoreDelta(statement)
+      }
+    };
     update.$inc['scores.' + statement.type] = 1;
 
     Statement.findOneAndUpdate(query, update, function(err, parent) {
@@ -82,6 +86,16 @@ function updateParentScores(cb) {
       cb(err, statement);
     });
   };
+}
+
+function scoreDelta(statement) {
+  if (statement.type === 'support') {
+    return 1;
+  }
+  if (statement.type === 'opposition') {
+    return -1;
+  }
+  return 0;
 }
 
 function retrieveResponses(type, cb) {
