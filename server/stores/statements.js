@@ -58,7 +58,7 @@ function onStatementSaved(cb) {
     if (err) { return cb(err, undefined); }
    
     if (statement.parent) {
-      cb(err, statement);
+      populate(Statement.findById(statement.id)).exec(cb);
     } else {
       Debate.findById(statement.debate, addStatementToDebate(statement, cb));
     }
@@ -71,7 +71,9 @@ function addStatementToDebate(statement, cb) {
 
     debate.statements.push(statement.id);
     debate.save(function(err) {
-      cb(err, statement);
+      if (err) { return cb(err, undefined); }
+      
+      populate(Statement.findById(statement.id)).exec(cb);
     });  
   };
 }
@@ -128,7 +130,6 @@ function reverseStatementEffects(parentId, removedStatement, returnStatement, cb
   Statement.findOneAndUpdate(query, update, function(err, grandParent) {
     if (returnStatement.chain && returnStatement.chain.length > 1) {
       returnStatement.chain[returnStatement.chain.length - 2] = grandParent;
-      console.log('return', JSON.stringify(returnStatement, undefined, 2));
     }
     cb(err, returnStatement);
   });
