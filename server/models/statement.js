@@ -24,17 +24,39 @@ var Statement = new Schema({
   }
 });
 
+Statement.methods.summary = function() {
+  this.debate = undefined;
+  this.responses = undefined;
+  this.chain = undefined;
+  return this;
+};
+
 Statement.methods.toJSON = function() {
   var obj = this.toObject();
   obj.id = obj._id;
   delete obj._id;
   delete obj.__v;
 
-  obj.debate = this.debate.toJSON();
-  obj.chain = this.chain.map(function(statement) { return statement.toJSON(); });
-  obj.responses = this.responses.map(function(statement) { return statement.toJSON(); });
+  if (this.debate !== undefined) {
+    this.debate.statements = undefined;
+    obj.debate = this.debate.toJSON();
+  }
+
+  if (this.chain !== undefined) {
+    obj.chain = this.chain.map(function(statement) { return statement.toJSON(); });
+  }
+
+  if (this.responses !== undefined) {
+    obj.responses = this.responses.map(function(statement) { return statement.toJSON(); });
+  }
 
   return obj;
+};
+
+Statement.statics.summarize = function(statements) {
+  return statements.map(function(statement) {
+    return statement.summary();
+  });
 };
 
 Statement.statics.fromJSON = function(obj) {

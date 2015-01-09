@@ -12,7 +12,7 @@ function populate(query) {
 module.exports = function() {
   return {
     list: function(cb) {
-      populate(Debate.find({})).exec(cb);
+      Debate.find({}, function(err, debates) { cb(err, Debate.summarize(debates)); });
     },
 
     get: function(id, cb) {

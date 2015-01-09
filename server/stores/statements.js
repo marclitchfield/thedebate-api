@@ -12,10 +12,10 @@ var ObjectionThresholds = {
 var HiddenObjectionTypes = ['junk'];
 
 function populate(query) {
-  query.populate('debate').populate('chain').populate({
-    path: 'responses',
-    match: { tag: { $nin: HiddenObjectionTypes } }
-  });
+  query
+    .populate('debate')
+    .populate('chain')
+    .populate({ path: 'responses', match: { tag: { $nin: HiddenObjectionTypes } } });
   return query;
 }
 
@@ -72,7 +72,6 @@ function addStatementToDebate(statement, cb) {
     debate.statements.push(statement.id);
     debate.save(function(err) {
       if (err) { return cb(err, undefined); }
-      
       populate(Statement.findById(statement.id)).exec(cb);
     });  
   };
@@ -159,9 +158,9 @@ function retrieveResponses(type, cb) {
   return function(err, statement) {
     if (err) { return cb(err, undefined); }
 
-    cb(err, statement.responses.filter(function(response) {
+    cb(err, Statement.summarize(statement.responses.filter(function(response) {
       return !type || response.type === type;
-    }));
+    })));
   };
 }
 
@@ -181,7 +180,8 @@ function addResponseToParent(parent, cb) {
 
     parent.responses.push(response.id);
     parent.save(function(err) {
-      cb(err, response);
+      if (err) { return cb(err, undefined); }
+      populate(Statement.findById(response.id)).exec(cb);
     });
   };
 }

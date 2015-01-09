@@ -5,43 +5,84 @@ var _ = require('lodash');
 var baseUrl = 'http://localhost:9004/api/';
 var debateTitle = 'api test debate ' + uuid.v4();
 var statementBody = 'api test statement ' + uuid.v4();
-var responseBody = uuid.v4();
+var responseBody = 'api test response ' + uuid.v4();
 
-// Expect 200s for all responses by default
-frisby.expectJSON = function(json) {
-  this.expectStatus(200);
-  return this.expectJSON();
+var request = {
+  create: function(msg) {
+    var context = frisby.create(msg);
+    context.expectResponse = function() {
+      var self = this.expectStatus(200);
+      return self.expectJSON.apply(self, Array.prototype.slice.call(arguments));
+    };
+    return context;
+  }
 };
 
-frisby.create('POST /debates should create new debate')
+request.create('Should create new debate')
   .post(baseUrl + 'debates', { title: debateTitle })
-  .expectJSON(expectedDebate())
+  .expectResponse(expectedDebate().withStatements([]))
   .afterJSON(function(debate) {
 
-    frisby.create('GET /debates should contain new debate')
+    request.create('Should contain new debate')
       .get(baseUrl + 'debates')
-      .expectJSON('?', expectedDebate(debate.id)).toss();
+      .expectResponse('?', expectedDebate(debate.id))
+      .toss();
 
-    frisby.create('GET /debate/:id should return debate details')
+    request.create('Should return debate details')
       .get(baseUrl + 'debate/' + debate.id)
-      .expectJSON(expectedDebate(debate.id)).toss();
+      .expectResponse(expectedDebate(debate.id).withStatements([]))
+      .toss();
 
-    frisby.create('POST /debate/:id/statements should create top-level statement')
+    request.create('Should create top-level statement')
       .post(baseUrl + 'statements', { body: statementBody, debate: { id: debate.id }})
-      .expectJSON(expectedStatement().withDebate(debate))
+      .expectResponse(expectedStatement()
+        .withDebate(expectedDebate(debate.id))
+        .withResponses([]).withChain([]))
       .afterJSON(function(statement) {
 
-        frisby.create('GET /debate/:id should contain new statement')
+        request.create('Should contain new statement')
           .get(baseUrl + 'debate/' + debate.id)
-          .expectJSON('statements.?', expectedStatement(statement.id).withoutDebate()).toss();
+          .expectResponse(expectedDebate(debate.id)
+            .withStatements([expectedStatement(statement.id)]))
+          .toss();
 
-        frisby.create('GET /statement/:id should return statement details')
+        request.create('Should return statement details')
           .get(baseUrl + 'statement/' + statement.id)
-          .expectJSON(expectedStatement(statement.id).withDebate(debate)).toss();
+          .expectResponse(expectedStatement(statement.id)
+            .withDebate(expectedDebate(debate.id))
+            .withResponses([]).withChain([]))
+          .toss();
 
-        frisby.create('POST /statement/:id/responses should create response')
-          .post(baseUrl + 'statement/:id/responses', { body: responseBody, parent: { id: statement.id }, debate: { id: debate.id } })
-          .expectJSON(expectedResponse().withoutDebate()).toss();
+        request.create('Should increment score for statement')
+          .post(baseUrl + 'statement/' + statement.id + '/upvote')
+          .expectResponse(expectedStatement(statement.id)
+            .withDebate(expectedDebate(debate.id))
+            .withResponses([]).withChain([])
+            .withScore(1))
+          .toss();
+
+        request.create('Should create supporting response')
+          .post(baseUrl + 'statement/' + statement.id + '/responses', { 
+            body: responseBody, type: 'support', parent: { id: statement.id }, debate: { id: debate.id } 
+          })
+          .expectResponse(expectedResponse('support')
+            .withDebate(expectedDebate(debate.id))
+            .withResponses([])
+            .withChain([expectedStatement(statement.id).withScore(1)]))
+          // .afterJSON(function(response) {
+
+          //   request.create('POST /statement/:id/upvote for support response should recalculate score for parent statement')
+          //     .post(baseUrl + 'statement/' + response.id + '/upvote')
+          //     .inspectJSON()
+          //     .expectJSON(expectedResponse().withScore(1)
+          //       .withChain(expectedStatement(statement.id)
+          //           .withScore(2) // parent was already upvoted
+          //           .withSupport(1))
+          //     ).toss();
+
+          //})
+          .toss();
+
 
       }).toss();
   }).toss();
@@ -51,7 +92,10 @@ function expectedDebate(id) {
   return {
     title: debateTitle,
     score: 0,
-    id: id || function(id) { expect(id).toBeTruthy(); }
+    id: id || function(id) { expect(id).toBeTruthy(); },
+    statements: function(statements) { expect(statements).toBeUndefined(); },
+
+    withStatements: function(statements) { this.statements = statements; return this; }
   }
 };
 
@@ -59,26 +103,24 @@ function expectedStatement(id) {
   return {
     body: statementBody,
     score: 0,
-    responses: [],
     id: id || function(id) { expect(id).toBeTruthy(); },
-    withDebate: function(debate) { 
-      this.debate = debate; 
-      return this;
-    },
-    withoutDebate: function() {
-      delete this.debate;
-      return this;
-    }
+    responses: function(responses) { expect(responses).toBeUndefined(); },
+    debate: function(debate) { expect(debate).toBeUndefined(); },
+    chain: function(chain) { expect(chain).toBeUndefined(); },
+
+    withDebate: function(debate) { this.debate = debate; return this; },
+    withChain: function(chain) { this.chain = chain; return this; },
+    withResponses: function(responses) { this.responses = responses; return this; },
+    withScore: function(score) { this.score = score; return this; },
+    withSupport: function(support) { this.support = support; return this; },
+    withOpposition: function(opposition) { this.opposition = opposition; return this; },
+    withObjection: function(objection) { this.objection = objection; return this; }
   };
 };
 
-function expectedResponse(id) {
+function expectedResponse(type, id) {
   return _.assign(expectedStatement(id), {
     body: responseBody,
-    chain: [],
-    withChain: function() {
-      this.chain = Array.prototype.slice.call(arguments);
-      return this;
-    }
+    type: type
   });
 }
