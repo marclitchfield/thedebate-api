@@ -6,8 +6,7 @@ thedebate-api
 
 Web API for the debate
 
-
-## Development Setup
+# Development setup
 
 Install dependencies
 ```
@@ -15,16 +14,25 @@ npm run setup
 npm install
 ```
 
-Watch for changes and automatically lint and test
+Build
 ```
-grunt watch
-```
-
-Run the server and watch for file changes
-```
-supervisor -w . server.js
+gulp
 ```
 
+Watch
+```
+gulp watch
+```
+
+Start web server process under supervisor, listening on port 9002
+```
+npm run dev
+```
+
+Run the tests
+```
+npm test
+```
 
 ## Components
 

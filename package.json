@@ -12,6 +12,7 @@
     "url": "https://github.com/marclitchfield/thedebate-api.git"
   },
   "scripts": {
+    "setup": "npm install -g frisby gulp",
     "clean": "gulp clean",
     "build": "gulp",
     "watch": "gulp watch",
