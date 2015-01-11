@@ -22,7 +22,7 @@ Debate.methods.toJSON = function() {
 
   if (this.statements !== undefined) {
     obj.statements = this.statements.map(function(statement) {
-      return statement.toJSON();
+      return statement.summary().toJSON();
     });
   }
 

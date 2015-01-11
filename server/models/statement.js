@@ -39,15 +39,15 @@ Statement.methods.toJSON = function() {
 
   if (this.debate !== undefined) {
     this.debate.statements = undefined;
-    obj.debate = this.debate.toJSON();
+    obj.debate = this.debate.summary().toJSON();
   }
 
   if (this.chain !== undefined) {
-    obj.chain = this.chain.map(function(statement) { return statement.toJSON(); });
+    obj.chain = this.chain.map(function(statement) { return statement.summary().toJSON(); });
   }
 
   if (this.responses !== undefined) {
-    obj.responses = this.responses.map(function(statement) { return statement.toJSON(); });
+    obj.responses = this.responses.map(function(statement) { return statement.summary().toJSON(); });
   }
 
   return obj;
