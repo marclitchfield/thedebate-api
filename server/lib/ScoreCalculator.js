@@ -2,41 +2,37 @@ module.exports = (function() {
 
   return {
     upvote: function(response) {
-      response.score++;
-      response.scores.support++;
+      var delta = { id: response.id, score: 1, scores: { support: 1 } };
+      var deltas = [delta];
 
       if (!response.chain) {
-        return;
+        return deltas;
       }
 
       var child = response;
-      var delta = 1;
-
       response.chain.reverse().forEach(function(parent) {
-        if (child.type === 'objection') {
-          if (child.score >= 0) {
-            parent.scores.objection += delta;
-          }
-        }
-
-        delta = scoreDelta(child.type, delta);
-        parent.score += delta;
-        
-        if (delta > 0) { parent.scores.support++; }
-        if (delta < 0) { parent.scores.opposition++; }
-
+        delta = scoreDelta(child, parent, delta);
+        deltas.push(delta);
         child = parent;
       });
-    },
 
-    downvote: function(response) {
+      return deltas;
     }
   };
 
-  function scoreDelta(type, delta) {
-    if (type === 'support') { return delta; };
-    if (type === 'opposition') { return -delta; };
-    return 0;
+  function scoreDelta(child, parent, childDelta) {
+    var parentDelta = { id: parent.id, scores: {} };
+
+    if (child.type === 'objection') {
+      parentDelta.score = 0;
+      parentDelta.scores.objection = child.score + childDelta.score >= 0 ? childDelta.score : 0;
+    } else {
+      parentDelta.score = childDelta.score * (child.type === 'opposition' ? -1 : 1);
+      if (parentDelta.score > 0) { parentDelta.scores.support = 1; }
+      if (parentDelta.score < 0) { parentDelta.scores.opposition = 1; }
+    }
+
+    return parentDelta;
   }
 
 })();
