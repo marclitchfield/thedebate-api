@@ -45,21 +45,14 @@ frisby.create('Should create new debate')
           .post(baseUrl + 'statement/' + statement.id + '/responses', { 
             body: responseBody, type: 'support', parent: { id: statement.id }, debate: { id: debate.id }
           })
-          .expectJSON(expectedResponse({ 
-            type: 'support', 
-            debate: expectedDebate({ id: debate.id }), 
-            responses: [], 
+          .expectJSON(expectedResponse({ type: 'support', debate: expectedDebate({ id: debate.id }), responses: [], 
             chain: [expectedStatement({ id: statement.id, score: 1, scores: { support: 1 } })] 
           }))
           .afterJSON(function(response) {
 
             frisby.create('POST /statement/:id/upvote for support response should recalculate score for parent statement')
               .post(baseUrl + 'statement/' + response.id + '/upvote')
-              .expectJSON(expectedResponse({ 
-                id: response.id, 
-                type: 'support', 
-                debate: expectedDebate({ id: debate.id }), 
-                responses: [], 
+              .expectJSON(expectedResponse({ id: response.id, type: 'support', debate: expectedDebate({ id: debate.id }), responses: [], 
                 score: 1,
                 scores: { support: 1 },
                 chain: [expectedStatement({ id: statement.id, score: 2, scores: { support: 2 } })]
