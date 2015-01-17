@@ -1,12 +1,12 @@
 module.exports = {
   upvote: function(response) {
     var upvoteDelta = require('./deltas/upvote');
-    return _walkChain(response, upvoteDelta.init, upvoteDelta.next);
+    return walkChain(response, upvoteDelta.init, upvoteDelta.next);
   },
 
   deactivate: function(response) {
     var deactivateDelta = require('./deltas/deactivate');
-    return _walkChain(response, deactivateDelta.init, deactivateDelta.next);
+    return walkChain(response, deactivateDelta.init, deactivateDelta.next);
   },
 
   // reactivate: function(response) {
@@ -14,7 +14,7 @@ module.exports = {
   // }
 };
 
-function _walkChain(response, init, next) {
+function walkChain(response, init, next) {
   var delta = init(response);
   var deltas = [delta];
   if (!response.chain) {

@@ -299,11 +299,7 @@ function getExpectedDeltas(baseStatements, expected) {
   Object.keys(expected).forEach(function(key) {
     deltas[key] = { 
       score: expected[key].score, 
-      scores: {
-        support: expected[key].scores[0],
-        opposition: expected[key].scores[1],
-        objection: expected[key].scores[2]
-      }
+      scores: expandScores(expected[key].scores)
     };
   });
   return deltas;
