@@ -4,8 +4,8 @@ var objectionEffects = {
   junk: {
     threshold: 5,
     isApplied: function(target) { return target.tag !== undefined; },
-    applyEffect: function(target) { return { tag: 'junk', active: false }; },
-    revertEffect: function(target) { return { tag: undefined, active: true }; }
+    applyEffect: function() { return { tag: 'junk', active: false }; },
+    revertEffect: function() { return { tag: undefined, active: true }; }
   }
 };
 
@@ -25,6 +25,7 @@ module.exports = {
         } else if(statement.score + delta.score < effect.threshold && effect.isApplied(target)) {
           effectDelta = effect.revertEffect(target);
         }
+
         if (effectDelta) {
           effectDelta.id = target.id;
           effectDeltas.push(effectDelta);

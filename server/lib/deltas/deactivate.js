@@ -12,14 +12,14 @@ module.exports = (function() {
       }
 
       if (response.type === 'opposition') {
-        return createDelta({
+        return createDelta(response, {
           score: response.score,
           scores: { support: -response.scores.opposition, opposition: -response.scores.support }
         });
       }
 
       if (response.type === 'objection') {
-        return createDelta({
+        return createDelta(response, {
           score: 0,
           scores: { objection: response.score > 0 ? -response.score : 0 }
         });
@@ -45,9 +45,7 @@ module.exports = (function() {
 
       // OBJECTION
 
-      console.log('calculated delta', parentDelta);
-
-      return createDelta(parent);
+      return delta;
     }
   };
 

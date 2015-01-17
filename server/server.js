@@ -15,7 +15,7 @@ server.register({
   options: {
     reporters: [{
       reporter: require('good-console'),
-      args:[{ error: '*'}, { log: ['*'], response: '*' }]
+      args: [{ error: '*', log: '*', response: '*' }]
     }]
   }
 }, function (err) {

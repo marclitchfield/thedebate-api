@@ -8,25 +8,36 @@ statements.response2 = { id: 2, chain: [statements.statement, statements.respons
 statements.response3 = { id: 3, chain: [statements.statement, statements.response1, statements.response2] };
 
 describe('statement score calculations', function() {
-  // itShouldUpvote(statements, 'statement', {}, {
-  //   statement: { score: 1, scores: [1, 0, 0] }
-  // });
-
+  itShouldUpvote(statements, {
+    statement: 'statement', 
+    given: {}, 
+    expect: {
+      statement: { score: 1, scores: [1, 0, 0] }
+    }
+  });
 
   describe('statement:support', function() {
-    itShouldUpvote(statements, 'response1', {
-      response1: { type: 'support' }
-    }, {
-      statement: { score: 1, scores: [1, 0, 0] },
-      response1: { score: 1, scores: [1, 0, 0] }
+    itShouldUpvote(statements, {
+      statement: 'response1', 
+      given: {
+        response1: { type: 'support' }
+      }, 
+      expect: {
+        statement: { score: 1, scores: [1, 0, 0] },
+        response1: { score: 1, scores: [1, 0, 0] }
+      }
     });
 
-    // itShouldDeactivate(statements, 'response1', {
-    //   statement: { score: 5, scores: [5, 3, 1] },
-    //   response1: { score: 3, scores: [3, 0, 0], type: 'support' }
-    // }, {
-    //   statement: { score: -3, scores: [-3, 0, 0] }
-    // });
+    itShouldDeactivate(statements, {
+      statement: 'response1', 
+      given: {
+        statement: { score: 5, scores: [5, 3, 1] },
+        response1: { score: 3, scores: [3, 0, 0], type: 'support' }
+      }, 
+      expect: {
+        statement: { score: -3, scores: [-3, 0, 0] }
+      }
+    });
 
     // // itShouldReactivate(statements, 'response1', {
     // //   statement: { score: 2, scores: [2, 3, 1] },
@@ -37,131 +48,179 @@ describe('statement score calculations', function() {
 
 
     describe('statement:support:support', function() {
-      itShouldUpvote(statements, 'response2', {
-        response1: { type: 'support' },
-        response2: { type: 'support' }
-      }, {
-        statement: { score: 1, scores: [1, 0, 0] },
-        response1: { score: 1, scores: [1, 0, 0] },
-        response2: { score: 1, scores: [1, 0, 0] }
+      itShouldUpvote(statements, {
+        statement: 'response2', 
+        given: {
+          response1: { type: 'support' },
+          response2: { type: 'support' }
+        }, 
+        expect: {
+          statement: { score: 1, scores: [1, 0, 0] },
+          response1: { score: 1, scores: [1, 0, 0] },
+          response2: { score: 1, scores: [1, 0, 0] }
+        }
       });
     });
 
     describe('statement:support:opposition', function() {
-      itShouldUpvote(statements, 'response2', {
-        response1: { type: 'support' },
-        response2: { type: 'opposition' }
-      }, {
-        statement: { score: -1, scores: [0, 1, 0] },
-        response1: { score: -1, scores: [0, 1, 0] },
-        response2: { score: 1,  scores: [1, 0, 0] }
+      itShouldUpvote(statements, {
+        statement: 'response2', 
+        given: {
+          response1: { type: 'support' },
+          response2: { type: 'opposition' }
+        }, 
+        expect: {
+          statement: { score: -1, scores: [0, 1, 0] },
+          response1: { score: -1, scores: [0, 1, 0] },
+          response2: { score: 1,  scores: [1, 0, 0] }
+        }
       });
     });
 
     describe('statement:support:objection', function() {
-      itShouldUpvote(statements, 'response2', {
-        response1: { type: 'support' },
-        response2: { type: 'objection' }
-      }, {
-        statement: { score: 0, scores: [0, 0, 0] },
-        response1: { score: 0, scores: [0, 0, 1] },
-        response2: { score: 1, scores: [1, 0, 0] }
+      itShouldUpvote(statements, {
+        statement: 'response2', 
+        given: {
+          response1: { type: 'support' },
+          response2: { type: 'objection' }
+        }, 
+        expect: {
+          statement: { score: 0, scores: [0, 0, 0] },
+          response1: { score: 0, scores: [0, 0, 1] },
+          response2: { score: 1, scores: [1, 0, 0] }
+        }
       });
     });
 
   });
 
   describe('statement:opposition', function() {
-    itShouldUpvote(statements, 'response1', {
-      response1: { type: 'opposition' }
-    }, {
-      statement: { score: -1, scores: [0, 1, 0] },
-      response1: { score: 1,  scores: [1, 0, 0] }
+    itShouldUpvote(statements, {
+      statement: 'response1', 
+      given: {
+        response1: { type: 'opposition' }
+      }, 
+      expect: {
+        statement: { score: -1, scores: [0, 1, 0] },
+        response1: { score: 1,  scores: [1, 0, 0] }
+      }
     });
 
     describe('statement:opposition:support', function() {
-      itShouldUpvote(statements, 'response2', {
-        response1: { type: 'opposition' },
-        response2: { type: 'support' }
-      }, {
-        statement: { score: -1, scores: [0, 1, 0] },
-        response1: { score: 1,  scores: [1, 0, 0] },
-        response2: { score: 1,  scores: [1, 0, 0] }
+      itShouldUpvote(statements, {
+        statement: 'response2', 
+        given: {
+          response1: { type: 'opposition' },
+          response2: { type: 'support' }
+        }, 
+        expect: {
+          statement: { score: -1, scores: [0, 1, 0] },
+          response1: { score: 1,  scores: [1, 0, 0] },
+          response2: { score: 1,  scores: [1, 0, 0] }
+        }
       });
     });
 
     describe('statement:opposition:opposition', function() {
-      itShouldUpvote(statements, 'response2', {
-        response1: { type: 'opposition' },
-        response2: { type: 'opposition' }
-      }, {
-        statement: { score: 1,  scores: [1, 0, 0] },
-        response1: { score: -1, scores: [0, 1, 0] },
-        response2: { score: 1,  scores: [1, 0, 0] }
+      itShouldUpvote(statements, {
+        statement: 'response2', 
+        given: {
+          response1: { type: 'opposition' },
+          response2: { type: 'opposition' }
+        }, 
+        expect: {
+          statement: { score: 1,  scores: [1, 0, 0] },
+          response1: { score: -1, scores: [0, 1, 0] },
+          response2: { score: 1,  scores: [1, 0, 0] }
+        }
       });
     });
 
     describe('statement:opposition:objection', function() {
-      itShouldUpvote(statements, 'response2', {
-        response1: { type: 'opposition' },
-        response2: { type: 'objection' }
-      }, {
-        statement: { score: 0, scores: [0, 0, 0] },
-        response1: { score: 0, scores: [0, 0, 1] },
-        response2: { score: 1, scores: [1, 0, 0] }
+      itShouldUpvote(statements, {
+        statement: 'response2', 
+        given: {
+          response1: { type: 'opposition' },
+          response2: { type: 'objection' }
+        }, 
+        expect: {
+          statement: { score: 0, scores: [0, 0, 0] },
+          response1: { score: 0, scores: [0, 0, 1] },
+          response2: { score: 1, scores: [1, 0, 0] }
+        }
       });
     });
   });
 
   describe('statement:objection', function() {
-    itShouldUpvote(statements, 'response1', {
-      response1: { type: 'objection' }
-    }, {
-      statement: { score: 0, scores: [0, 0, 1] },
-      response1: { score: 1, scores: [1, 0, 0] }
+    itShouldUpvote(statements, {
+      statement: 'response1', 
+      given: {
+        response1: { type: 'objection' }
+      }, 
+      expect: {
+        statement: { score: 0, scores: [0, 0, 1] },
+        response1: { score: 1, scores: [1, 0, 0] }
+      }
     });
 
     describe('statement:objection:support', function() {
-      itShouldUpvote(statements, 'response2', {
-        response1: { type: 'objection' },
-        response2: { type: 'support' }
-      }, {
-        statement: { score: 0, scores: [0, 0, 1] },
-        response1: { score: 1, scores: [1, 0, 0] },
-        response2: { score: 1, scores: [1, 0, 0] }
+      itShouldUpvote(statements, {
+        statement: 'response2', 
+        given: {
+          response1: { type: 'objection' },
+          response2: { type: 'support' }
+        }, 
+        expect: {
+          statement: { score: 0, scores: [0, 0, 1] },
+          response1: { score: 1, scores: [1, 0, 0] },
+          response2: { score: 1, scores: [1, 0, 0] }
+        }
       });
     });
 
     describe('statement:objection:opposition', function() {
-      itShouldUpvote(statements, 'response2', {
-        response1: { type: 'objection' },
-        response2: { type: 'opposition' }
-      }, {
-        statement: { score: 0,  scores: [0, 0, 0] },
-        response1: { score: -1, scores: [0, 1, 0] },
-        response2: { score: 1,  scores: [1, 0, 0] }
+      itShouldUpvote(statements, {
+        statement: 'response2', 
+        given: {
+          response1: { type: 'objection' },
+          response2: { type: 'opposition' }
+        }, 
+        expect: {
+          statement: { score: 0,  scores: [0, 0, 0] },
+          response1: { score: -1, scores: [0, 1, 0] },
+          response2: { score: 1,  scores: [1, 0, 0] }
+        }
       });
 
       describe('statement:objection:opposition:support', function() {
-        itShouldUpvote(statements, 'response3', {
-          response1: { type: 'objection' },
-          response2: { type: 'opposition' },
-          response3: { type: 'support' }
-        }, {
-          statement: { score: 0, scores: [0, 0, 0] },
-
-        })
+        itShouldUpvote(statements, {
+          statement: 'response3', 
+          given: {
+            response1: { type: 'objection' },
+            response2: { type: 'opposition' },
+            response3: { type: 'support' }
+          }, 
+          expect: {
+            statement: { score: 0, scores: [0, 0, 0] },
+          }
+        });
       });
+
     });
 
     describe('statement:objection:objection', function() {
-      itShouldUpvote(statements, 'response2', {
-        response1: { type: 'objection' },
-        response2: { type: 'objection' }
-      }, {
-        statement: { score: 0, scores: [0, 0, 0] },
-        response1: { score: 0, scores: [0, 0, 1] },
-        response2: { score: 1, scores: [1, 0, 0] }
+      itShouldUpvote(statements, {
+        statement: 'response2', 
+        given: {
+          response1: { type: 'objection' },
+          response2: { type: 'objection' }
+        }, 
+        expect: {
+          statement: { score: 0, scores: [0, 0, 0] },
+          response1: { score: 0, scores: [0, 0, 1] },
+          response2: { score: 1, scores: [1, 0, 0] }
+        }
       });
     });
   });
@@ -169,24 +228,24 @@ describe('statement score calculations', function() {
 });
 
 
-function itShouldUpvote(statementsTemplate, upvoteStatementKey, initialState, expected) {
-  var statements = initializeStatements(statementsTemplate, initialState);
-  var expectedDeltas = getExpectedDeltas(statements, expected);
-  var actualDeltas = scores.upvote(statements[upvoteStatementKey]);
+function itShouldUpvote(statementsTemplate, parameters) {
+  var statements = givenStatements(statementsTemplate, parameters.given);
+  var expectedDeltas = getExpectedDeltas(statements, parameters.expect);
+  var actualDeltas = scores.upvote(statements[parameters.statement]);
   describeDeltas('upvote', statements, expectedDeltas, actualDeltas);
 }
 
-function itShouldDeactivate(statementsTemplate, deactivateStatementKey, initialState, expected) {
-  var statements = initializeStatements(statementsTemplate, initialState);
-  var expectedDeltas = getExpectedDeltas(statements, expected);
-  var actualDeltas = scores.deactivate(statements[deactivateStatementKey]);
+function itShouldDeactivate(statementsTemplate, parameters) {
+  var statements = givenStatements(statementsTemplate, parameters.given);
+  var expectedDeltas = getExpectedDeltas(statements, parameters.expect);
+  var actualDeltas = scores.deactivate(statements[parameters.statement]);
   describeDeltas('deactivate', statements, expectedDeltas, actualDeltas);
 }
 
-function itShouldReactivate(statementsTemplate, reactivateStatementKey, initialState, expected) {
-  var statements = initializeStatements(statementsTemplate, initialState);
-  var expectedDeltas = getExpectedDeltas(statements, expected);
-  var actualDeltas = scores.deactivate(statements[reactivateStatementKey]);
+function itShouldReactivate(statementsTemplate, parameters) {
+  var statements = givenStatements(statementsTemplate, parameters.given);
+  var expectedDeltas = getExpectedDeltas(statements, parameters.expect);
+  var actualDeltas = scores.deactivate(statements[parameters.statement]);
   describeDeltas('reactivate', statements, expectedDeltas, actualDeltas);
 }
 
@@ -223,14 +282,16 @@ function describeDeltas(message, statements, expectedDeltas, actualDeltas) {
   });
 }
 
-function initializeStatements(statementsTemplate, state) {
+function givenStatements(statementsTemplate, givens) {
   var statements = _.cloneDeep(statementsTemplate);
-  Object.keys(statements).forEach(function(key) {
-    var statement = statements[key];
-    statements[key].score = 0;
-    statements[key].scores = { support: 0, opposition: 0, objection: 0 };
+  Object.keys(givens).forEach(function(key) {
+    statements[key].type = givens[key].type;
+    statements[key].score = givens[key].score || 0;
+    if (givens[key].scores) {
+      statements[key].scores = expandScores(givens[key].scores)
+    }
   });
-  return _.merge(statements, state);
+  return statements;
 }
 
 function getExpectedDeltas(baseStatements, expected) {
@@ -246,4 +307,12 @@ function getExpectedDeltas(baseStatements, expected) {
     };
   });
   return deltas;
+}
+
+function expandScores(scores) {
+  return {
+    support: scores[0],
+    opposition: scores[1],
+    objection: scores[2]
+  };
 }

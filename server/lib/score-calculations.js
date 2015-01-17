@@ -9,9 +9,9 @@ module.exports = {
     return _walkChain(response, deactivateDelta.init, deactivateDelta.next);
   },
 
-  reactivate: function(response) {
-    return [];
-  }
+  // reactivate: function(response) {
+  //   return [];
+  // }
 };
 
 function _walkChain(response, init, next) {
