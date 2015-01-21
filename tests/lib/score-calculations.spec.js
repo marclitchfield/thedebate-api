@@ -1,3 +1,4 @@
+require('jasmine-only');
 var scores = require('../../server/lib/score-calculations');
 var _ = require('lodash');
 
@@ -11,7 +12,7 @@ describe('statement score calculations', function() {
   itShouldUpvote(statements, {
     statement: 'statement', 
     given: {}, 
-    expect: {
+    expectDeltas: {
       statement: { score: 1, scores: [1, 0, 0] }
     }
   });
@@ -22,7 +23,7 @@ describe('statement score calculations', function() {
       given: {
         response1: { type: 'support' }
       }, 
-      expect: {
+      expectDeltas: {
         statement: { score: 1, scores: [1, 0, 0] },
         response1: { score: 1, scores: [1, 0, 0] }
       }
@@ -34,17 +35,17 @@ describe('statement score calculations', function() {
         statement: { score: 5, scores: [5, 3, 1] },
         response1: { score: 3, scores: [3, 0, 0], type: 'support' }
       }, 
-      expect: {
+      expectDeltas: {
         statement: { score: -3, scores: [-3, 0, 0] }
       }
     });
 
-    // // itShouldReactivate(statements, 'response1', {
-    // //   statement: { score: 2, scores: [2, 3, 1] },
-    // //   response1: { score: 3, scores: [0, 0, 0], type: 'support' }
-    // // }, {
-    // //   statement: { score: 3, scores: [3, 0, 0] }
-    // // });
+    // itShouldReactivate(statements, 'response1', {
+    //   statement: { score: 2, scores: [2, 3, 1] },
+    //   response1: { score: 3, scores: [0, 0, 0], type: 'support' }
+    // }, {
+    //   statement: { score: 3, scores: [3, 0, 0] }
+    // });
 
 
     describe('statement:support:support', function() {
@@ -54,12 +55,26 @@ describe('statement score calculations', function() {
           response1: { type: 'support' },
           response2: { type: 'support' }
         }, 
-        expect: {
+        expectDeltas: {
           statement: { score: 1, scores: [1, 0, 0] },
           response1: { score: 1, scores: [1, 0, 0] },
           response2: { score: 1, scores: [1, 0, 0] }
         }
       });
+
+      itShouldDeactivate(statements, {
+        statement: 'response2',
+        given: {
+          statement: { score: 3, scores: [5, 4, 0] },
+          response1: { score: 2, scores: [3, 3, 0], type: 'support' },
+          response2: { score: 1, scores: [2, 1, 0], type: 'support' }
+        }, 
+        expectDeltas: {
+          statement: { score: -1, scores: [-2, -1, 0] },
+          response1: { score: -1, scores: [-2, -1, 0] }
+        }
+      });
+
     });
 
     describe('statement:support:opposition', function() {
@@ -69,10 +84,23 @@ describe('statement score calculations', function() {
           response1: { type: 'support' },
           response2: { type: 'opposition' }
         }, 
-        expect: {
+        expectDeltas: {
           statement: { score: -1, scores: [0, 1, 0] },
           response1: { score: -1, scores: [0, 1, 0] },
           response2: { score: 1,  scores: [1, 0, 0] }
+        }
+      });
+
+      itShouldDeactivate(statements, {
+        statement: 'response2',
+        given: {
+          statement: { score: 3, scores: [5, 2, 0] },
+          response1: { score: 1, scores: [3, 2, 0], type: 'support' },
+          response2: { score: 2, scores: [2, 0, 0], type: 'opposition' }
+        }, 
+        expectDeltas: {
+          statement: { score:  2, scores: [0, -2, 0] },
+          response1: { score:  2, scores: [0, -2, 0] }
         }
       });
     });
@@ -84,12 +112,39 @@ describe('statement score calculations', function() {
           response1: { type: 'support' },
           response2: { type: 'objection' }
         }, 
-        expect: {
+        expectDeltas: {
           statement: { score: 0, scores: [0, 0, 0] },
           response1: { score: 0, scores: [0, 0, 1] },
           response2: { score: 1, scores: [1, 0, 0] }
         }
       });
+
+      itShouldDeactivate(statements, {
+        statement: 'response2',
+        given: {
+          statement: { score: 3, scores: [3, 4, 0] },
+          response1: { score: 3, scores: [3, 1, 5], type: 'support' },
+          response2: { score: 5, scores: [5, 0, 0], type: 'objection' }
+        }, 
+        expectDeltas: {
+          statement: { score: 0, scores: [0, 0,  0] },
+          response1: { score: 0, scores: [0, 0, -5] }
+        }
+      });
+
+      itShouldDeactivate(statements, {
+        statement: 'response2',
+        given: {
+          statement: { score: 3,  scores: [3, 4, 0] },
+          response1: { score: 3,  scores: [3, 1, 3], type: 'support' },
+          response2: { score: -5, scores: [0, 5, 0], type: 'objection' }
+        }, 
+        expectDeltas: {
+          statement: { score: 0, scores: [0, 0, 0] },
+          response1: { score: 0, scores: [0, 0, 0] }
+        }
+      });
+
     });
 
   });
@@ -100,11 +155,23 @@ describe('statement score calculations', function() {
       given: {
         response1: { type: 'opposition' }
       }, 
-      expect: {
+      expectDeltas: {
         statement: { score: -1, scores: [0, 1, 0] },
         response1: { score: 1,  scores: [1, 0, 0] }
       }
     });
+
+    itShouldDeactivate(statements, {
+      statement: 'response1',
+      given: {
+        statement: { score: 3,  scores: [3, 1, 0] },
+        response1: { score: 3,  scores: [3, 1, 3], type: 'opposition' }
+      }, 
+      expectDeltas: {
+        statement: { score: 3, scores: [-1, -3, 0] }
+      }
+    });
+
 
     describe('statement:opposition:support', function() {
       itShouldUpvote(statements, {
@@ -113,7 +180,7 @@ describe('statement score calculations', function() {
           response1: { type: 'opposition' },
           response2: { type: 'support' }
         }, 
-        expect: {
+        expectDeltas: {
           statement: { score: -1, scores: [0, 1, 0] },
           response1: { score: 1,  scores: [1, 0, 0] },
           response2: { score: 1,  scores: [1, 0, 0] }
@@ -128,7 +195,7 @@ describe('statement score calculations', function() {
           response1: { type: 'opposition' },
           response2: { type: 'opposition' }
         }, 
-        expect: {
+        expectDeltas: {
           statement: { score: 1,  scores: [1, 0, 0] },
           response1: { score: -1, scores: [0, 1, 0] },
           response2: { score: 1,  scores: [1, 0, 0] }
@@ -143,7 +210,7 @@ describe('statement score calculations', function() {
           response1: { type: 'opposition' },
           response2: { type: 'objection' }
         }, 
-        expect: {
+        expectDeltas: {
           statement: { score: 0, scores: [0, 0, 0] },
           response1: { score: 0, scores: [0, 0, 1] },
           response2: { score: 1, scores: [1, 0, 0] }
@@ -158,7 +225,7 @@ describe('statement score calculations', function() {
       given: {
         response1: { type: 'objection' }
       }, 
-      expect: {
+      expectDeltas: {
         statement: { score: 0, scores: [0, 0, 1] },
         response1: { score: 1, scores: [1, 0, 0] }
       }
@@ -171,7 +238,7 @@ describe('statement score calculations', function() {
           response1: { type: 'objection' },
           response2: { type: 'support' }
         }, 
-        expect: {
+        expectDeltas: {
           statement: { score: 0, scores: [0, 0, 1] },
           response1: { score: 1, scores: [1, 0, 0] },
           response2: { score: 1, scores: [1, 0, 0] }
@@ -186,7 +253,7 @@ describe('statement score calculations', function() {
           response1: { type: 'objection' },
           response2: { type: 'opposition' }
         }, 
-        expect: {
+        expectDeltas: {
           statement: { score: 0,  scores: [0, 0, 0] },
           response1: { score: -1, scores: [0, 1, 0] },
           response2: { score: 1,  scores: [1, 0, 0] }
@@ -201,7 +268,7 @@ describe('statement score calculations', function() {
             response2: { type: 'opposition' },
             response3: { type: 'support' }
           }, 
-          expect: {
+          expectDeltas: {
             statement: { score: 0, scores: [0, 0, 0] },
           }
         });
@@ -216,7 +283,7 @@ describe('statement score calculations', function() {
           response1: { type: 'objection' },
           response2: { type: 'objection' }
         }, 
-        expect: {
+        expectDeltas: {
           statement: { score: 0, scores: [0, 0, 0] },
           response1: { score: 0, scores: [0, 0, 1] },
           response2: { score: 1, scores: [1, 0, 0] }
@@ -230,21 +297,21 @@ describe('statement score calculations', function() {
 
 function itShouldUpvote(statementsTemplate, parameters) {
   var statements = givenStatements(statementsTemplate, parameters.given);
-  var expectedDeltas = getExpectedDeltas(statements, parameters.expect);
+  var expectedDeltas = getExpectedDeltas(statements, parameters.expectDeltas);
   var actualDeltas = scores.upvote(statements[parameters.statement]);
   describeDeltas('upvote', statements, expectedDeltas, actualDeltas);
 }
 
 function itShouldDeactivate(statementsTemplate, parameters) {
   var statements = givenStatements(statementsTemplate, parameters.given);
-  var expectedDeltas = getExpectedDeltas(statements, parameters.expect);
+  var expectedDeltas = getExpectedDeltas(statements, parameters.expectDeltas);
   var actualDeltas = scores.deactivate(statements[parameters.statement]);
   describeDeltas('deactivate', statements, expectedDeltas, actualDeltas);
 }
 
 function itShouldReactivate(statementsTemplate, parameters) {
   var statements = givenStatements(statementsTemplate, parameters.given);
-  var expectedDeltas = getExpectedDeltas(statements, parameters.expect);
+  var expectedDeltas = getExpectedDeltas(statements, parameters.expectDeltas);
   var actualDeltas = scores.deactivate(statements[parameters.statement]);
   describeDeltas('reactivate', statements, expectedDeltas, actualDeltas);
 }

@@ -18,7 +18,7 @@
     "watch": "gulp watch",
     "start": "node dist/server.js",
     "dev": "supervisor -w . dist/server.js",
-    "test": "jasmine-node tests --verbose"
+    "test": "jasmine-node tests"
   },
   "engines": {
     "node": ">= 0.10.0"
@@ -30,7 +30,8 @@
     "gulp-jshint": "~1.8.5",
     "lodash": "^2.4.1",
     "uuid": "~2.0.1",
-    "frisby": "git://github.com/marclitchfield/frisby#release-fix-nested-objects"
+    "frisby": "git://github.com/marclitchfield/frisby#release-fix-nested-objects",
+    "jasmine-only": "~0.1.0"
   },
   "dependencies": {
     "hapi": "~8.0.0",

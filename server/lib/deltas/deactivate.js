@@ -4,26 +4,17 @@ module.exports = (function() {
 
   return {
     init: function(response) {
-      if (response.type === 'support') { 
-        return createDelta(response, {
-          score: -response.score,
-          scores: { support: -response.scores.support, opposition: -response.scores.opposition }
-        });
-      }
-
-      if (response.type === 'opposition') {
-        return createDelta(response, {
-          score: response.score,
-          scores: { support: -response.scores.opposition, opposition: -response.scores.support }
-        });
-      }
-
       if (response.type === 'objection') {
         return createDelta(response, {
-          score: 0,
-          scores: { objection: response.score > 0 ? -response.score : 0 }
+          score: -response.score,
+          scores: { objection: -response.score }
         });
       }
+
+      return createDelta(response, {
+        score: -response.score,
+        scores: { support: -response.scores.support, opposition: -response.scores.opposition }
+      });
 
       return createDelta(response);
     },
@@ -43,9 +34,14 @@ module.exports = (function() {
         });
       }
 
-      // OBJECTION
+      if (child.type === 'objection') {
+        return createDelta(parent, {
+          score: 0,
+          scores: { objection: childDelta.score < 0 ? childDelta.scores.objection : 0 }
+        });
+      }
 
-      return delta;
+      return createDelta(parent);
     }
   };
 
