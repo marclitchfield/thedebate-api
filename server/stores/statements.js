@@ -1,13 +1,7 @@
-var _ = require('lodash');
 var mongoose = require('mongoose');
 var Statement = mongoose.model('Statement', require('../models/statement'));
 var Debate = mongoose.model('Debate', require('../models/debate'));
-
-var ObjectionThresholds = {
-  junk: 5,
-  edit: 5,
-  logic: 10
-};
+var scoreCalculator = require('../lib/score-calculations');
 
 var HiddenObjectionTypes = ['junk'];
 
@@ -30,14 +24,10 @@ module.exports = function() {
     },
 
     upvote: function(id, cb) {
-      var update = { 
-        '$inc': { 
-          'upvotes': 1, 
-          'score': 1, 
-          'scores.support': 1 
-        } 
-      };
-      populate(Statement.findOneAndUpdate({_id: id}, update)).exec(updateParentScores(cb));
+      populate(Statement.findById(id)).exec(function(err, statement) {
+        if (err) { return cb(err, undefined); }
+        updateApplyDeltas(scoreCalculator.upvote, statement, cb);
+      });
     },
 
     responses: {
@@ -52,6 +42,30 @@ module.exports = function() {
     }
   };
 }();
+
+function updateApplyDeltas(scoreCalculation, statement, cb) {
+  var deltas = scoreCalculation.call(null, statement);
+  var bulk = Statement.collection.initializeUnorderedBulkOp();
+  deltas.forEach(function(delta) {
+    console.log('bulk update: ', delta);
+    bulk.find({ _id: delta.id }).updateOne({ 
+      '$inc': {
+        'score': delta.score,
+        'scores.support': delta.scores.support,
+        'scores.opposition': delta.scores.opposition,
+        'scores.objection': delta.scores.objection
+      }
+    });
+  });
+  bulk.execute(function(err, response) {
+    response.getWriteErrors().forEach(function(error) {
+      console.log('# BULK ERROR', error.toJSON());
+    });
+    console.log('!! BULK UPSERTED', response.toJSON());
+    if (err) { return cb(err, undefined); }
+    populate(Statement.findById(statement.id)).exec(cb);
+  });
+}
 
 function onStatementSaved(cb) {
   return function(err, statement) {
@@ -75,83 +89,6 @@ function addStatementToDebate(statement, cb) {
       populate(Statement.findById(statement.id)).exec(cb);
     });  
   };
-}
-
-function updateParentScores(cb) {
-  return function(err, statement) {
-    if (err) { return cb(err, undefined); }
-
-    if ((statement.chain || []).length === 0) {
-      return cb(undefined, statement);
-    }
-
-    var parent = statement.chain[statement.chain.length - 1];
-    var query = { _id: parent._id };
-    var update = {
-      '$inc': {
-        'score': scoreDelta(statement,1)
-      }
-    };
-    update.$inc['scores.' + statement.type] = 1;
-
-    if (statement.type === 'objection' && 
-          statement.score >= ObjectionThresholds[statement.objection.type] && 
-          !statement.tag) {
-      update = applyObjectionEffects(statement, update);
-    }
-
-    populate(Statement.findOneAndUpdate(query, update)).exec(function(err, parent) {
-      if (err) { return cb(err, undefined); }
-
-      statement.chain[statement.chain.length - 1] = parent;
-
-      if (parent.chain && !statement.tag && HiddenObjectionTypes.indexOf(parent.tag) > -1) {
-        var grandParent = parent.chain[parent.chain.length - 1];
-        reverseStatementEffects(grandParent, parent, statement, cb);
-      } else {
-        cb(err, statement);
-      }
-    });
-  };
-}
-
-function reverseStatementEffects(parentId, removedStatement, returnStatement, cb) {
-  var query = { _id: parentId };
-  var update = {
-    '$inc': {
-      'score': -scoreDelta(removedStatement, removedStatement.score),
-      'scores.support': removedStatement.type === 'support' ? -removedStatement.score : 0,
-      'scores.opposition': removedStatement.type === 'opposition' ? -removedStatement.score : 0,
-      'scores.objection': removedStatement.type === 'objection' ? -removedStatement.score : 0
-    }
-  };
-
-  Statement.findOneAndUpdate(query, update, function(err, grandParent) {
-    if (returnStatement.chain && returnStatement.chain.length > 1) {
-      returnStatement.chain[returnStatement.chain.length - 2] = grandParent;
-    }
-    cb(err, returnStatement);
-  });
-}
-
-function applyObjectionEffects(statement, update) {
-  return _.merge(update, {
-    edit: {},
-    junk: {
-      '$set': { tag: 'junk' }
-    },
-    logic: {}
-  }[statement.objection.type]);
-}
-
-function scoreDelta(statement, quantity) {
-  if (statement.type === 'support') {
-    return quantity;
-  }
-  if (statement.type === 'opposition') {
-    return -quantity;
-  }
-  return 0;
 }
 
 function retrieveResponses(type, cb) {
