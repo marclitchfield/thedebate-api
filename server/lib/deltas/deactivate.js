@@ -15,8 +15,6 @@ module.exports = (function() {
         score: -response.score,
         scores: { support: -response.scores.support, opposition: -response.scores.opposition }
       });
-
-      return createDelta(response);
     },
 
     next: function(child, parent, childDelta) {
