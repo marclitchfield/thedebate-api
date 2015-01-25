@@ -12,7 +12,7 @@ module.exports = (function() {
         return createDelta(parent, { 
           score: 0,
           scores: { 
-            objection: child.score + childDelta.score >= 0 ? childDelta.score : 0 
+            objection: Math.max(child.score + childDelta.score, 0) - Math.max(child.score, 0)
           }
         });
       }

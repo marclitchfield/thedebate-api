@@ -1,11 +1,12 @@
 var _ = require('lodash');
+var createDelta = require('./deltas/create-delta');
 
 var objectionEffects = {
   junk: {
     threshold: 5,
-    isApplied: function(target) { return target.tag !== undefined; },
+    isApplied: function(target) { return target.tag; },
     applyEffect: function() { return { tag: 'junk', active: false }; },
-    revertEffect: function() { return { tag: undefined, active: true }; }
+    revertEffect: function() { return { tag: null, active: true }; }
   }
 };
 
@@ -17,18 +18,14 @@ module.exports = {
       var statement = _findStatement(response, delta.id);
       if (statement.type === 'objection') {
         var effect = objectionEffects[statement.objection.type];
-        var target = statement.chain[statement.chain.length - 1];
-        var effectDelta;
+        if (statement.chain) {
+          var target = statement.chain[statement.chain.length - 1];
 
-        if (statement.score + delta.score >= effect.threshold && !effect.isApplied(target)) {
-          effectDelta = effect.applyEffect(target);
-        } else if(statement.score + delta.score < effect.threshold && effect.isApplied(target)) {
-          effectDelta = effect.revertEffect(target);
-        }
-
-        if (effectDelta) {
-          effectDelta.id = target.id;
-          effectDeltas.push(effectDelta);
+          if (statement.score + delta.score >= effect.threshold && !effect.isApplied(target)) {
+            effectDeltas.push(createDelta(target, effect.applyEffect()));
+          } else if(statement.score + delta.score < effect.threshold && effect.isApplied(target)) {
+            effectDeltas.push(createDelta(target, effect.revertEffect()));
+          }
         }
       }
     });

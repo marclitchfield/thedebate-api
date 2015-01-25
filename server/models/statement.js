@@ -33,7 +33,7 @@ Statement.methods.summary = function() {
 
 Statement.methods.toJSON = function() {
   var obj = this.toObject();
-  obj.id = obj._id;
+  obj.id = obj._id.toString();
   delete obj._id;
   delete obj.__v;
 
