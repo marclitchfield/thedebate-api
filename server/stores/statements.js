@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+var ObjectID = require('mongodb').ObjectID;
 var Statement = mongoose.model('Statement', require('../models/statement'));
 var Debate = mongoose.model('Debate', require('../models/debate'));
 var scoreCalculator = require('../lib/score-calculations');
@@ -47,8 +48,7 @@ function updateApplyDeltas(scoreCalculation, statement, cb) {
   var deltas = scoreCalculation.call(null, statement);
   var bulk = Statement.collection.initializeUnorderedBulkOp();
   deltas.forEach(function(delta) {
-    console.log('bulk update: ', delta);
-    bulk.find({ _id: delta.id }).updateOne({ 
+    bulk.find({ _id: ObjectID.fromHexString(delta.id) }).updateOne({ 
       '$inc': {
         'score': delta.score,
         'scores.support': delta.scores.support,
@@ -57,11 +57,7 @@ function updateApplyDeltas(scoreCalculation, statement, cb) {
       }
     });
   });
-  bulk.execute(function(err, response) {
-    response.getWriteErrors().forEach(function(error) {
-      console.log('# BULK ERROR', error.toJSON());
-    });
-    console.log('!! BULK UPSERTED', response.toJSON());
+  bulk.execute(function(err) {
     if (err) { return cb(err, undefined); }
     populate(Statement.findById(statement.id)).exec(cb);
   });
