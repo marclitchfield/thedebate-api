@@ -35,7 +35,7 @@ module.exports = (function() {
       if (child.type === 'objection') {
         return createDelta(parent, {
           score: 0,
-          scores: { objection: childDelta.score < 0 ? childDelta.scores.objection : 0 }
+          scores: { objection: Math.max(child.score + childDelta.score, 0) - Math.max(child.score, 0) }
         });
       }
 
