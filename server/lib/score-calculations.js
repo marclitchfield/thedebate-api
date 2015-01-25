@@ -18,16 +18,14 @@ module.exports = {
 
 function walkChain(response, init, next) {
   var delta = init(response);
-  //console.log('init', delta);
   var deltas = [delta];
   if (!response.chain) {
     return deltas;
   }
 
   var child = response;
-  response.chain.reverse().forEach(function(parent) {
+  response.chain.slice().reverse().forEach(function(parent) {
     delta = next(child, parent, delta);
-    //console.log('next', delta);
     deltas.push(delta);
     child = parent;
   });

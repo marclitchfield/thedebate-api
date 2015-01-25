@@ -3,10 +3,10 @@ var scores = require('../../server/lib/score-calculations');
 var _ = require('lodash');
 
 var statements = {};
-statements.statement = { id: 0 };
-statements.response1 = { id: 1, chain: [statements.statement] };
-statements.response2 = { id: 2, chain: [statements.statement, statements.response1] };
-statements.response3 = { id: 3, chain: [statements.statement, statements.response1, statements.response2] };
+statements.statement = { id: '0' };
+statements.response1 = { id: '1', chain: [statements.statement] };
+statements.response2 = { id: '2', chain: [statements.statement, statements.response1] };
+statements.response3 = { id: '3', chain: [statements.statement, statements.response1, statements.response2] };
 
 describe('statement score calculations', function() {
   itShouldUpvote(statements, {
@@ -32,11 +32,11 @@ describe('statement score calculations', function() {
     itShouldDeactivate(statements, {
       statement: 'response1', 
       given: {
-        statement: { score: 5, scores: [5, 3, 1] },
-        response1: { score: 3, scores: [3, 0, 0], type: 'support' }
+        statement: { score: 4, scores: [9, 5, 0] },
+        response1: { score: 2, scores: [4, 2, 0], type: 'support' }
       }, 
       expectDeltas: {
-        statement: { score: -3, scores: [-3, 0, 0] }
+        statement: { score: -2, scores: [-4, -2, 0] }
       }
     });
 

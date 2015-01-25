@@ -1,9 +1,10 @@
 var calc = require('../../server/lib/objection-effects');
+var _ = require('lodash');
 
 describe('Objection Effects', function() {
 
-  var statement = { id: 1, score: 0 };
-  var response = { id: 2, type: 'objection', chain: [statement], score: 0, objection: {} };
+  var statement = { id: '1', score: 0 };
+  var response = { id: '2', type: 'objection', chain: [statement], score: 0, objection: {} };
 
   describe('Junk Objections', function() {
 
@@ -14,13 +15,17 @@ describe('Objection Effects', function() {
 
     it('Tags parent when objection score crosses above threshold', function() {
       response.score = 4;
-      expect(calc.effects(response, withDelta(1))).toContain({ id: statement.id, tag: 'junk', active: false });
+      var effect = _.find(calc.effects(response, withDelta(1)), function(e) { return e.id === statement.id; });
+      expect(effect.tag).toEqual('junk');
+      expect(effect.active).toEqual(false);
     });
 
     it('Removes tag when objection score crosses below threshold', function() {
       response.score = 5;
       statement.tag = 'junk';
-      expect(calc.effects(response, withDelta(-1))).toContain({ id: statement.id, tag: undefined, active: true });
+      var effect = _.find(calc.effects(response, withDelta(-1)), function(e) { return e.id === statement.id; });
+      expect(effect.tag).toBeNull();
+      expect(effect.active).toEqual(true);
     });
 
   });

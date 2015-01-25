@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 var ObjectID = require('mongodb').ObjectID;
 var Statement = mongoose.model('Statement', require('../models/statement'));
 var Debate = mongoose.model('Debate', require('../models/debate'));
-var scoreCalculator = require('../lib/score-calculations');
+var statementUpdate = require('../lib/statement-update');
 
 var HiddenObjectionTypes = ['junk'];
 
@@ -27,7 +27,7 @@ module.exports = function() {
     upvote: function(id, cb) {
       populate(Statement.findById(id)).exec(function(err, statement) {
         if (err) { return cb(err, undefined); }
-        updateApplyDeltas(scoreCalculator.upvote, statement, cb);
+        updateApplyDeltas('upvote', statement, cb);
       });
     },
 
@@ -44,18 +44,22 @@ module.exports = function() {
   };
 }();
 
-function updateApplyDeltas(scoreCalculation, statement, cb) {
-  var deltas = scoreCalculation.call(null, statement);
+function updateApplyDeltas(action, statement, cb) {
+  var deltas = statementUpdate.calculate(action, statement.toJSON());
   var bulk = Statement.collection.initializeUnorderedBulkOp();
   deltas.forEach(function(delta) {
-    bulk.find({ _id: ObjectID.fromHexString(delta.id) }).updateOne({ 
+    var update = { 
       '$inc': {
         'score': delta.score,
         'scores.support': delta.scores.support,
         'scores.opposition': delta.scores.opposition,
         'scores.objection': delta.scores.objection
       }
-    });
+    };
+    if (delta.tag !== undefined) {
+      update.$set = { tag: delta.tag };
+    }
+    bulk.find({ _id: ObjectID.createFromHexString(delta.id) }).updateOne(update);
   });
   bulk.execute(function(err) {
     if (err) { return cb(err, undefined); }
