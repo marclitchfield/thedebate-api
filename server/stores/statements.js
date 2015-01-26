@@ -54,10 +54,11 @@ function updateApplyDeltas(action, statement, cb) {
         'scores.support': delta.scores.support,
         'scores.opposition': delta.scores.opposition,
         'scores.objection': delta.scores.objection
-      }
+      },
     };
     if (delta.tag !== undefined) {
-      update.$set = { tag: delta.tag };
+      update.$set = update.$set || {};
+      update.$set.tag = delta.tag;
     }
     bulk.find({ _id: ObjectID.createFromHexString(delta.id) }).updateOne(update);
   });

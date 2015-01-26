@@ -17,6 +17,11 @@ module.exports = {
             returnDeltas.push(delta);
           });
         }
+        if (delta.active === true) {
+          module.exports.calculate('reactivate', target).forEach(function(delta) {
+            returnDeltas.push(delta);
+          });
+        }
       });
     }
     return returnDeltas;

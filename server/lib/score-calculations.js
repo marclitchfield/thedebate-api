@@ -11,9 +11,12 @@ module.exports = {
     return deltas;
   },
 
-  // reactivate: function(response) {
-  //   return [];
-  // }
+  reactivate: function(response) {
+    var reactivateDelta = require('./deltas/reactivate');
+    var deltas = walkChain(response, reactivateDelta.init, reactivateDelta.next);
+    deltas.shift();
+    return deltas;
+  }
 };
 
 function walkChain(response, init, next) {
