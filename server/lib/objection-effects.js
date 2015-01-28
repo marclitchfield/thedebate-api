@@ -18,12 +18,14 @@ module.exports = {
       var statement = _findStatement(response, delta.id);
       if (statement.type === 'objection' && statement.chain) {
         var effect = objectionEffects[statement.objection.type];
-        var target = statement.chain[statement.chain.length - 1];
+        if (effect !== undefined) {
+          var target = statement.chain[statement.chain.length - 1];
 
-        if (statement.score + delta.score >= effect.threshold && !effect.isApplied(target)) {
-          effectDeltas.push(createDelta(target, effect.applyEffect()));
-        } else if(statement.score + delta.score < effect.threshold && effect.isApplied(target)) {
-          effectDeltas.push(createDelta(target, effect.revertEffect()));
+          if (statement.score + delta.score >= effect.threshold && !effect.isApplied(target)) {
+            effectDeltas.push(createDelta(target, effect.applyEffect()));
+          } else if(statement.score + delta.score < effect.threshold && effect.isApplied(target)) {
+            effectDeltas.push(createDelta(target, effect.revertEffect()));
+          }
         }
       }
     });
