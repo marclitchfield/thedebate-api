@@ -1,3 +1,5 @@
+var createDelta = require('./deltas/create-delta');
+
 module.exports = {
   upvote: function(response) {
     var upvoteDelta = require('./deltas/upvote');
@@ -8,6 +10,7 @@ module.exports = {
     var deactivateDelta = require('./deltas/deactivate');
     var deltas = walkChain(response, deactivateDelta.init, deactivateDelta.next);
     deltas.shift();
+    deltas.unshift(createDelta(response, { active: false }));
     return deltas;
   },
 
@@ -15,6 +18,7 @@ module.exports = {
     var reactivateDelta = require('./deltas/reactivate');
     var deltas = walkChain(response, reactivateDelta.init, reactivateDelta.next);
     deltas.shift();
+    deltas.unshift(createDelta(response, { active: true }));
     return deltas;
   }
 };

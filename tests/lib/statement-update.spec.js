@@ -42,7 +42,28 @@ describe('statement update scenarios', function() {
     });
   });
 
-  describe('given statement with two unsupported junk objections', function() {
+  describe('given an unsupported junk objection to a supported junk objection', function() {
+    beforeEach(function() {
+      givenStatement = 
+        { id: '1',       score: 2, responses: [
+          { id: '2',     score: 8, type: 'support', tag: 'junk', responses: [
+            { id: '3',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
+              { id: '4', score: 4, type: 'objection', objection: { type: 'junk'} }
+            ]}
+          ]}
+        ]};
+    });
+
+    it('when junk objection (4) gains support, the parent junk objection (3) is deactivated', function() {
+      whenUpvoted(statement('4'));
+      expect(statement('4').score).toEqual(5);
+      expect(statement('3').tag).toEqual('junk');
+      expect(statement('2').tag).toBeNull();
+      expect(statement('1').score).toEqual(10);
+    });
+  });
+
+  xdescribe('given statement with two unsupported junk objections', function() {
     beforeEach(function() {
       givenStatement = 
         { id: '1',       score: 10, responses: [
@@ -62,7 +83,7 @@ describe('statement update scenarios', function() {
     });
   });
 
-  describe('given statement with supported and unsupported junk objections', function() {
+  xdescribe('given statement with supported and unsupported junk objections', function() {
     beforeEach(function() {
       givenStatement = 
         { id: '1',       score: 2, responses: [
