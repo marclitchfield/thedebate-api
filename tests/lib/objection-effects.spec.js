@@ -15,7 +15,7 @@ describe('Objection Effects', function() {
 
     it('Tags parent when objection score crosses above threshold', function() {
       response.score = 4;
-      var effect = _.find(calc.effects(response, withDelta(1)), function(e) { return e.id === statement.id; });
+      var effect = effectFor(response, withDelta(1), statement);
       expect(effect.tag).toEqual('junk');
       expect(effect.active).toEqual(false);
     });
@@ -23,7 +23,7 @@ describe('Objection Effects', function() {
     it('Removes tag when objection score crosses below threshold', function() {
       response.score = 5;
       statement.tag = 'junk';
-      var effect = _.find(calc.effects(response, withDelta(-1)), function(e) { return e.id === statement.id; });
+      var effect = effectFor(response, withDelta(-1), statement);
       expect(effect.tag).toBeNull();
       expect(effect.active).toEqual(true);
     });
@@ -39,6 +39,11 @@ describe('Objection Effects', function() {
 
   function withDelta(score) {
     return [{ id: response.id, score: score }];
+  }
+
+  function effectFor(response, delta, statement) {
+    var effectDeltas = calc.effects(response, delta);
+    return _.find(effectDeltas, function(e) { return e.id === statement.id; });
   }
 
 });

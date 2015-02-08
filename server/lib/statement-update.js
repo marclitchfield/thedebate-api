@@ -38,12 +38,3 @@ function activationEffect(action, statement) {
   }
   return [];
 }
-
-// 1. statement-update calculate 'upvote' objection (4)
-// 2. score-calculations upvote objection (4) -> scoreDeltas
-// 3. objection-effects effects objection (4) scoreDeltas -> effectDeltas
-// 4. returnDeltas = scoreDeltas + effectDeltas
-// 5. each effectDelta: 
-//    when !effectDelta.active: statement-update calculate 'deactivate' objection (4) -> push returnDeltas
-//    when effectDelta.active:  statement-update calculate 'reactivate' objection (4) -> push returnDeltas
-// 6. return returnDeltas

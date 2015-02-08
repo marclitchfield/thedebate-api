@@ -1,3 +1,5 @@
+'use strict';
+
 var _ = require('lodash');
 var createDelta = require('./deltas/create-delta');
 
@@ -11,35 +13,31 @@ var objectionEffects = {
 };
 
 module.exports = {
-  effects: function(response, scoreDeltas) {
+  effects: function (response, scoreDeltas) {
     var effectDeltas = [];
-
     scoreDeltas.forEach(function(scoreDelta) {
       var statement = _findStatement(response, scoreDelta.id);
       if (statement.type === 'objection' && statement.chain) {
-        getObjectionEffectDeltas(statement, scoreDelta).forEach(function(effectDelta) {
-          effectDeltas.push(effectDelta);
-        });
+        for(let effect of objectionEffectDeltas(statement, scoreDelta)) {
+          effectDeltas.push(effect);
+        }
       }
     });
-
     return effectDeltas;
   }
 };
 
-function getObjectionEffectDeltas(statement, scoreDelta) {
-  var effectDeltas = [];
+function* objectionEffectDeltas(statement, scoreDelta) {
   var effect = objectionEffects[statement.objection.type];
   if (effect !== undefined) {
     var target = statement.chain[statement.chain.length - 1];
 
     if (statement.score + scoreDelta.score >= effect.threshold && !effect.isApplied(target)) {
-      effectDeltas.push(createDelta(target, effect.applyEffect()));
+      yield createDelta(target, effect.applyEffect());
     } else if(statement.score + scoreDelta.score < effect.threshold && effect.isApplied(target)) {
-      effectDeltas.push(createDelta(target, effect.revertEffect()));
+      yield createDelta(target, effect.revertEffect());
     }
   }
-  return effectDeltas;
 }
 
 function _findStatement(response, id) {
