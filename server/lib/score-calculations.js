@@ -1,7 +1,5 @@
 'use strict';
 
-let createDelta = require('./deltas/create-delta');
-
 module.exports = {
   upvote: function( response) {
     let upvoteDelta = require('./deltas/upvote');

@@ -43,24 +43,23 @@ function* objectionEffectDeltas(statement, delta) {
   }
 }
 
-
 function objectionActivationEffect(statement, objection, effectDelta) {
   let target = findStatement(statement, objection.chain[objection.chain.length - 1].id);
   let effect = objectionEffects[objection.objection.type];
-  if (effectDelta.active === false) {
+  if (effectDelta.active === false && effect.isApplied(target)) {
     return createDelta(target, effect.revertEffect());
   }
-  if (effectDelta.active === true) {
+  if (effectDelta.active === true && !effect.isApplied(target) && objection.score >= effect.threshold) {
     return createDelta(target, effect.applyEffect());
   }
 }
 
-function thresholdEffectDelta(statement, scoreDelta, target) {
-  let effect = objectionEffects[statement.objection.type];
+function thresholdEffectDelta(objection, scoreDelta, target) {
+  let effect = objectionEffects[objection.objection.type];
   if (effect !== undefined && scoreDelta.score !== 0) {
-    if (statement.score + scoreDelta.score >= effect.threshold && !effect.isApplied(target)) {
+    if (objection.score + scoreDelta.score >= effect.threshold && !effect.isApplied(target)) {
       return createDelta(target, effect.applyEffect());
-    } else if(statement.score + scoreDelta.score < effect.threshold && effect.isApplied(target)) {
+    } else if(objection.score + scoreDelta.score < effect.threshold && effect.isApplied(target)) {
       return createDelta(target, effect.revertEffect());
     }
   }

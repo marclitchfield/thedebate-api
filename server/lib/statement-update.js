@@ -1,6 +1,5 @@
 'use strict';
 
-var createDelta = require('./deltas/create-delta');
 var scoreCalculator = require('./score-calculations');
 var objectionEffects = require('./objection-effects');
 var _ = require('lodash');
