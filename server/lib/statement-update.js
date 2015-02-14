@@ -1,3 +1,5 @@
+'use strict';
+
 var createDelta = require('./deltas/create-delta');
 var scoreCalculator = require('./score-calculations');
 var objectionEffects = require('./objection-effects');
@@ -7,27 +9,36 @@ module.exports = {
   calculate: function(action, statement) {
     var calculationDeltas = scoreCalculator[action].call(undefined, statement);
     var effectDeltas = objectionEffects.effects(statement, calculationDeltas);
-    var returnDeltas = calculationDeltas.concat(effectDeltas).concat(activationEffect(action, statement));
+    var returnDeltas = calculationDeltas
+      .concat(effectDeltas)
+      .concat(activationEffect(action, statement));
+
     if (statement.chain) {
       effectDeltas.forEach(function(effectDelta) {
-        var target = _.find(statement.chain, function(item) { return item.id === effectDelta.id; });
-        target.chain = _.first(statement.chain, function(item) { return item.id !== effectDelta.id; });
-
-        if (effectDelta.active === false) {
-          module.exports.calculate('deactivate', target).forEach(function(delta) {
-            returnDeltas.push(delta);
-          });
-        }
-        if (effectDelta.active === true) {
-          module.exports.calculate('reactivate', target).forEach(function(delta) {
-            returnDeltas.push(delta);
-          });
+        for(var delta of activationDeltas(statement, effectDelta)) {
+          returnDeltas.push(delta);
         }
       });
     }
     return returnDeltas;
   }
 };
+
+function* activationDeltas(statement, effectDelta) {
+  var target = _.find(statement.chain, function(item) { return item.id === effectDelta.id; });
+  target.chain = _.first(statement.chain, function(item) { return item.id !== effectDelta.id; });
+
+  if (effectDelta.active === false) {
+    for(let delta of module.exports.calculate('deactivate', target)) {
+      yield delta;
+    }
+  }
+  if (effectDelta.active === true) {
+    for(let delta of module.exports.calculate('reactivate', target)) {
+      yield delta;
+    }
+  }
+}
 
 function activationEffect(action, statement) {
   if (action === 'deactivate') {

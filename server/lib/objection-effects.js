@@ -1,9 +1,9 @@
 'use strict';
 
-var _ = require('lodash');
-var createDelta = require('./deltas/create-delta');
+let _ = require('lodash');
+let createDelta = require('./deltas/create-delta');
 
-var objectionEffects = {
+let objectionEffects = {
   junk: {
     threshold: 5,
     isApplied: function(target) { return !!target.tag; },
@@ -14,37 +14,58 @@ var objectionEffects = {
 
 module.exports = {
   effects: function (response, scoreDeltas) {
-    var effectDeltas = [];
+    let effectDeltas = [];
     scoreDeltas.forEach(function(scoreDelta) {
-      var statement = _findStatement(response, scoreDelta.id);
-      if (statement.type === 'objection' && statement.chain) {
-        for(let effect of objectionEffectDeltas(statement, scoreDelta)) {
-          effectDeltas.push(effect);
-        }
+      for(let effect of objectionEffectDeltas(response, scoreDelta)) {
+        effectDeltas.push(effect);
       }
     });
     return effectDeltas;
   }
 };
 
-function* objectionEffectDeltas(statement, scoreDelta) {
-  var effect = objectionEffects[statement.objection.type];
-  if (effect !== undefined) {
-    var target = statement.chain[statement.chain.length - 1];
-
-    if (statement.score + scoreDelta.score >= effect.threshold && !effect.isApplied(target)) {
-      yield createDelta(target, effect.applyEffect());
-    } else if(statement.score + scoreDelta.score < effect.threshold && effect.isApplied(target)) {
-      yield createDelta(target, effect.revertEffect());
+function* objectionEffectDeltas(statement, delta) {
+  let objection = findStatement(statement, delta.id);
+  if (objection === undefined || objection.type !== 'objection' || !objection.chain) {
+    return;
+  }
+  let target = findStatement(statement, objection.chain[objection.chain.length - 1].id);
+  let effectDelta = thresholdEffectDelta(objection, delta, target);
+  if (effectDelta !== undefined) {
+    yield effectDelta;
+    if (target.type === 'objection') {
+      yield* objectionActivationEffects(statement, target, effectDelta);
     }
   }
 }
 
-function _findStatement(response, id) {
+function* objectionActivationEffects(statement, objection, effectDelta) {
+  let target = findStatement(statement, objection.chain[objection.chain.length - 1].id);
+  let effect = objectionEffects[objection.objection.type];
+  if (effectDelta.active === false) {
+    yield createDelta(target, effect.revertEffect());
+  }
+  if (effectDelta.active === true) {
+    yield createDelta(target, effect.applyEffect());
+  }
+}
+
+function thresholdEffectDelta(statement, scoreDelta, target) {
+  let effect = objectionEffects[statement.objection.type];
+  if (effect !== undefined) {
+    if (statement.score + scoreDelta.score >= effect.threshold && !effect.isApplied(target)) {
+      return createDelta(target, effect.applyEffect());
+    } else if(statement.score + scoreDelta.score < effect.threshold && effect.isApplied(target)) {
+      return createDelta(target, effect.revertEffect());
+    }
+  }
+}
+
+function findStatement(response, id) {
   if (response.id === id) {
     return response;
   }
-  var item = _.find(response.chain, function(parent) { return parent.id === id; });
-  item.chain = _.first(response.chain, function(parent) { return parent.id !== id; });
-  return item;
+  let statement = _.find(response.chain, function(parent) { return parent.id === id; });
+  statement.chain = _.first(response.chain, function(parent) { return parent.id !== id; });
+  return statement;
 }

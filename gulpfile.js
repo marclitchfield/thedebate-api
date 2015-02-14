@@ -28,9 +28,9 @@ gulp.task('clean', function(cb) {
 
 gulp.task('server', ['server node_modules'], function() {
   return gulp.src(paths.server.files)
-    .pipe(jshint(path.join(paths.server.root, '.jshintrc')))
+    .pipe(jshint('.jshintrc'))
     .pipe(jshint.reporter('default'))
-    .pipe(gulp.dest(paths.dist.server))
+    .pipe(gulp.dest(paths.dist.server));
 });
 
 gulp.task('server node_modules', function() {

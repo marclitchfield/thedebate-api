@@ -89,7 +89,7 @@ function expectedStatement(expected) {
     debate: function(debate) { expect(debate).toBeUndefined(); },
     chain: function(chain) { expect(chain).toBeUndefined(); }
   }, expected);
-};
+}
 
 function expectedResponse(expected) {
   return expectedStatement(_.assign({

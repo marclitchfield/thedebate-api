@@ -34,7 +34,7 @@ describe('Objection Effects', function() {
     it('has no effect', function() {
       response.objection.type = 'undefined';
       expect(calc.effects(response, withDelta(1))).toEqual([]);
-    })
+    });
   });
 
   function withDelta(score) {

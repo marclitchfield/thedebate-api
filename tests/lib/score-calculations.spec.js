@@ -732,7 +732,7 @@ function givenStatements(statementsTemplate, givens) {
     statements[key].type = givens[key].type;
     statements[key].score = givens[key].score || 0;
     if (givens[key].scores) {
-      statements[key].scores = expandScores(givens[key].scores)
+      statements[key].scores = expandScores(givens[key].scores);
     }
   });
   return statements;
