@@ -9,10 +9,8 @@ module.exports = {
   calculate: function(action, statement) {
     var calculationDeltas = scoreCalculator[action].call(undefined, statement);
     var effectDeltas = objectionEffects.effects(statement, calculationDeltas);
-    var returnDeltas = calculationDeltas
-      .concat(effectDeltas)
-      .concat(activationEffect(action, statement));
-
+    var returnDeltas = calculationDeltas.concat(effectDeltas);
+ 
     if (statement.chain) {
       effectDeltas.forEach(function(effectDelta) {
         for(var delta of activationDeltas(statement, effectDelta)) {
@@ -38,14 +36,4 @@ function* activationDeltas(statement, effectDelta) {
       yield delta;
     }
   }
-}
-
-function activationEffect(action, statement) {
-  if (action === 'deactivate') {
-    return [createDelta(statement, { active: false })];
-  }
-  if (action === 'reactivate') {
-    return [createDelta(statement, { active: true })];
-  }
-  return [];
 }

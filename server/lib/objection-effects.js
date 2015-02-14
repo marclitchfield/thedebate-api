@@ -33,26 +33,31 @@ function* objectionEffectDeltas(statement, delta) {
   let effectDelta = thresholdEffectDelta(objection, delta, target);
   if (effectDelta !== undefined) {
     yield effectDelta;
+
     if (target.type === 'objection') {
-      yield* objectionActivationEffects(statement, target, effectDelta);
+      let activationEffectDelta = objectionActivationEffect(statement, target, effectDelta);
+      if (activationEffectDelta !== undefined) {
+        yield activationEffectDelta;
+      }
     }
   }
 }
 
-function* objectionActivationEffects(statement, objection, effectDelta) {
+
+function objectionActivationEffect(statement, objection, effectDelta) {
   let target = findStatement(statement, objection.chain[objection.chain.length - 1].id);
   let effect = objectionEffects[objection.objection.type];
   if (effectDelta.active === false) {
-    yield createDelta(target, effect.revertEffect());
+    return createDelta(target, effect.revertEffect());
   }
   if (effectDelta.active === true) {
-    yield createDelta(target, effect.applyEffect());
+    return createDelta(target, effect.applyEffect());
   }
 }
 
 function thresholdEffectDelta(statement, scoreDelta, target) {
   let effect = objectionEffects[statement.objection.type];
-  if (effect !== undefined) {
+  if (effect !== undefined && scoreDelta.score !== 0) {
     if (statement.score + scoreDelta.score >= effect.threshold && !effect.isApplied(target)) {
       return createDelta(target, effect.applyEffect());
     } else if(statement.score + scoreDelta.score < effect.threshold && effect.isApplied(target)) {

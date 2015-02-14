@@ -1,11 +1,10 @@
-var _ = require('lodash');
 var statementUpdate = require('../../server/lib/statement-update');
 var givenStatement;
 
 describe('statement update scenarios', function() {
   describe('given statement with unsupported junk objection', function() {
     beforeEach(function() {
-      givenStatement = 
+      givenStatement =
         { id: '1',     score: 10, responses: [
           { id: '2',   score: 8, type: 'support', responses: [
             { id: '3', score: 4, type: 'objection', objection: { type: 'junk' } }
@@ -23,7 +22,7 @@ describe('statement update scenarios', function() {
 
   describe('given statement with supported junk objection', function() {
     beforeEach(function() {
-      givenStatement = 
+      givenStatement =
         { id: '1',       score: 2, responses: [
           { id: '2',     score: 8, type: 'support', tag: 'junk', responses: [
             { id: '3',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
@@ -44,7 +43,7 @@ describe('statement update scenarios', function() {
 
   describe('given an unsupported junk objection to a supported junk objection', function() {
     beforeEach(function() {
-      givenStatement = 
+      givenStatement =
         { id: '1',       score: 2, responses: [
           { id: '2',     score: 8, type: 'support', tag: 'junk', responses: [
             { id: '3',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
@@ -63,9 +62,33 @@ describe('statement update scenarios', function() {
     });
   });
 
+  describe('given a supported junk objection to a supported junk objection', function() {
+    beforeEach(function() {
+      givenStatement =
+        { id: '1',         score: 10, responses: [
+          { id: '2',       score: 8, type: 'support', responses: [
+            { id: '3',     score: 5, type: 'objection', tag: 'junk', objection: { type: 'junk' }, responses: [
+              { id: '4',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
+                { id: '5', score: 0, type: 'opposition' }
+              ]}
+            ]}
+          ]}
+        ]};
+    });
+
+    it('when junk objection (4) loses support, the parent junk objection (3) is reactivated', function() {
+      whenUpvoted(statement('5'));
+      expect(statement('4').score).toEqual(4);
+      expect(statement('3').tag).toBeNull();
+      expect(statement('2').tag).toEqual('junk');
+      expect(statement('1').score).toEqual(2);
+    });
+  });
+  
+  
   xdescribe('given statement with two unsupported junk objections', function() {
     beforeEach(function() {
-      givenStatement = 
+      givenStatement =
         { id: '1',       score: 10, responses: [
           { id: '2',     score: 8, type: 'support', responses: [
             { id: '3',   score: 4, type: 'objection', objection: { type: 'junk' }},
@@ -76,7 +99,7 @@ describe('statement update scenarios', function() {
 
     it('when one junk objection (3) gains support, the other junk objection (4) is deactivated', function() {
       whenUpvoted(statement('3'));
-      expect(statement('4').tag).toEqual('obsolete'); 
+      expect(statement('4').tag).toEqual('obsolete');
       expect(statement('3').score).toEqual(5);
       expect(statement('2').tag).toEqual('junk');
       expect(statement('1').score).toEqual(2);
@@ -85,7 +108,7 @@ describe('statement update scenarios', function() {
 
   xdescribe('given statement with supported and unsupported junk objections', function() {
     beforeEach(function() {
-      givenStatement = 
+      givenStatement =
         { id: '1',       score: 2, responses: [
           { id: '2',     score: 8, type: 'support', tag: 'junk', responses: [
             { id: '3',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
@@ -132,7 +155,7 @@ function applyDeltas(statement, deltas) {
 }
 
 function findStatement(node, id) {
-  if (node.id === id) { 
+  if (node.id === id) {
     return populateStatement(node);
   }
   if (node.responses) {

@@ -24,5 +24,7 @@
   "white": false,
   "eqnull": true,
   "esnext": true,
-  "unused": true
+  "unused": true,
+  "jasmine": true,
+  "predef": ["xdescribe", "xit"]
 }

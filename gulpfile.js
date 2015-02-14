@@ -16,6 +16,10 @@ var paths = {
   server: {
     root: 'server/',
     files: ['server/**/*.js']
+  },
+  test: {
+    root: 'tests/',
+    files: ['tests/**/*.js']
   }
 };
 
@@ -33,6 +37,12 @@ gulp.task('server', ['server node_modules'], function() {
     .pipe(gulp.dest(paths.dist.server));
 });
 
+gulp.task('lint-tests', function() {
+  return gulp.src(paths.test.files)
+    .pipe(jshint('.jshintrc'))
+    .pipe(jshint.reporter('default'));
+});
+
 gulp.task('server node_modules', function() {
   // copy node_modules listed in paths.server.modules to node_modules in paths.dist.server
   return gulp.src(Object.keys(config.dependencies).map(function(m) {
@@ -44,6 +54,7 @@ gulp.task('server node_modules', function() {
 
 gulp.task('watch', function() {
   gulp.watch(paths.server.files, ['server']);
+  gulp.watch(paths.test.files, ['lint-tests']);
 });
 
 gulp.task('default', function() {
