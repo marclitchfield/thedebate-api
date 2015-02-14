@@ -1,18 +1,18 @@
 'use strict';
 
-var scoreCalculator = require('./score-calculations');
-var objectionEffects = require('./objection-effects');
-var _ = require('lodash');
+let scoreCalculator = require('./score-calculations');
+let objectionEffects = require('./objection-effects');
+let _ = require('lodash');
 
 module.exports = {
   calculate: function(action, statement) {
-    var calculationDeltas = scoreCalculator[action].call(undefined, statement);
-    var effectDeltas = objectionEffects.effects(statement, calculationDeltas);
-    var returnDeltas = calculationDeltas.concat(effectDeltas);
- 
+    let calculationDeltas = scoreCalculator[action].call(undefined, statement);
+    let effectDeltas = objectionEffects.effects(statement, calculationDeltas);
+    let returnDeltas = calculationDeltas.concat(effectDeltas);
+
     if (statement.chain) {
       effectDeltas.forEach(function(effectDelta) {
-        for(var delta of activationDeltas(statement, effectDelta)) {
+        for(let delta of activationDeltas(statement, effectDelta)) {
           returnDeltas.push(delta);
         }
       });
@@ -22,7 +22,7 @@ module.exports = {
 };
 
 function* activationDeltas(statement, effectDelta) {
-  var target = _.find(statement.chain, function(item) { return item.id === effectDelta.id; });
+  let target = _.find(statement.chain, function(item) { return item.id === effectDelta.id; });
   target.chain = _.first(statement.chain, function(item) { return item.id !== effectDelta.id; });
 
   if (effectDelta.active === false) {

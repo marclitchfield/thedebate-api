@@ -23,6 +23,7 @@ module.exports = {
 
 function walkChain(response, init, next) {
   let delta = init(response);
+  console.log('* score delta', delta);
   let deltas = [delta];
   if (!response.chain) {
     return deltas;
@@ -31,6 +32,7 @@ function walkChain(response, init, next) {
   let child = response;
   response.chain.slice().reverse().forEach(function(parent) {
     delta = next(child, parent, delta);
+    console.log('* score delta', delta);
     deltas.push(delta);
     child = parent;
   });

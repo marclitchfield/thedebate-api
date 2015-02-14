@@ -24,7 +24,7 @@ describe('statement update scenarios:', function() {
     beforeEach(function() {
       givenStatement =
         { id: '1',       score: 2, responses: [
-          { id: '2',     score: 8, type: 'support', tag: 'junk', responses: [
+          { id: '2',     score: 8, type: 'support', tag: 'junk', inactive: true, responses: [
             { id: '3',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
               { id: '4', score: 0, type: 'opposition' }
             ]}
@@ -45,7 +45,7 @@ describe('statement update scenarios:', function() {
     beforeEach(function() {
       givenStatement =
         { id: '1',       score: 2, responses: [
-          { id: '2',     score: 8, type: 'support', tag: 'junk', responses: [
+          { id: '2',     score: 8, type: 'support', tag: 'junk', inactive: true, responses: [
             { id: '3',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
               { id: '4', score: 4, type: 'objection', objection: { type: 'junk'} }
             ]}
@@ -67,7 +67,7 @@ describe('statement update scenarios:', function() {
       givenStatement =
         { id: '1',         score: 10, responses: [
           { id: '2',       score: 8, type: 'support', responses: [
-            { id: '3',     score: 5, type: 'objection', tag: 'junk', objection: { type: 'junk' }, responses: [
+            { id: '3',     score: 5, type: 'objection', tag: 'junk', inactive: true, objection: { type: 'junk' }, responses: [
               { id: '4',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
                 { id: '5', score: 0, type: 'opposition' }
               ]}
@@ -90,7 +90,7 @@ describe('statement update scenarios:', function() {
       givenStatement =
         { id: '1',         score: 10, responses: [
           { id: '2',       score: 8, type: 'support', responses: [
-            { id: '3',     score: 0, type: 'objection', tag: 'junk', objection: { type: 'junk' }, responses: [
+            { id: '3',     score: 4, type: 'objection', tag: 'junk', inactive: true, objection: { type: 'junk' }, responses: [
               { id: '4',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
                 { id: '5', score: 0, type: 'opposition' }
               ]}
@@ -103,6 +103,13 @@ describe('statement update scenarios:', function() {
       whenUpvoted(statement('5'));
       expect(statement('4').score).toEqual(4);
       expect(statement('3').tag).toBeNull();
+      expect(statement('2').tag).toBeUndefined();
+      expect(statement('1').score).toEqual(10);
+    });
+    
+    it.only('when junk objection (3) gains support, the parent statement is not deactivated because the junk objection (3) is already tagged as junk', function() {
+      whenUpvoted(statement('3'));
+      expect(statement('3').score).toEqual(5);
       expect(statement('2').tag).toBeUndefined();
       expect(statement('1').score).toEqual(10);
     });
@@ -130,10 +137,8 @@ describe('statement update scenarios:', function() {
       expect(statement('2').tag).toEqual('junk');
       expect(statement('1').score).toEqual(2);
     });
-    
   });
-  
-  
+
   xdescribe('given statement with two unsupported junk objections', function() {
     beforeEach(function() {
       givenStatement =

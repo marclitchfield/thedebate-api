@@ -32,6 +32,7 @@ function* objectionEffectDeltas(statement, delta) {
   let target = findStatement(statement, objection.chain[objection.chain.length - 1].id);
   let effectDelta = thresholdDelta(objection, delta, target);
   if (effectDelta !== undefined) {
+    console.log('* effect delta', effectDelta);
     yield effectDelta;
 
     if (target.type === 'objection') {
@@ -46,10 +47,12 @@ function* activationDeltas(statement, objection, effectDelta) {
   let targetDelta;
   if (effectDelta.active === false && effect.isApplied(target)) {
     targetDelta = createDelta(target, effect.revertEffect());
+    console.log('* effect delta', targetDelta);
     yield targetDelta;
   }
   if (effectDelta.active === true && !effect.isApplied(target) && objection.score >= effect.threshold) {
     targetDelta = createDelta(target, effect.applyEffect());
+    console.log('* effect delta', targetDelta);
     yield targetDelta;
   }
   if (targetDelta !== undefined && targetDelta.active !== undefined && target.type === 'objection') {
@@ -67,6 +70,13 @@ function thresholdDelta(objection, scoreDelta, target) {
     }
   }
 }
+
+//function applyActivationEffects(statement, effectDelta) {
+//  if (effectDelta.active !== undefined && effectDelta.active !== null) {
+//    let target = findStatement(statement, effectDelta.id);
+//    target.inactive = !effectDelta.active;
+//  }
+//}
 
 function findStatement(response, id) {
   if (response.id === id) {
