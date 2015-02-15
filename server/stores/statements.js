@@ -60,6 +60,10 @@ function updateApplyDeltas(action, statement, cb) {
       update.$set = update.$set || {};
       update.$set.tag = delta.tag;
     }
+    if (delta.active !== undefined) {
+      update.$set = update.$set || {};
+      update.$set.inactive = !delta.active;
+    }
     bulk.find({ _id: ObjectID.createFromHexString(delta.id) }).updateOne(update);
   });
   bulk.execute(function(err) {

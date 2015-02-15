@@ -32,6 +32,12 @@ describe('statement update scenarios:', function() {
         ]};
     });
 
+    it('when inactive statement (2) is upvoted, the parent statement (1) does not change', function() {
+      whenUpvoted(statement('2'));
+      expect(statement('2').score).toEqual(9);
+      expect(statement('1').score).toEqual(2);
+    });
+
     it('when junk objection (3) loses support, the parent statement (2) is reactivated', function() {
       whenUpvoted(statement('4'));
       expect(statement('4').score).toEqual(1);
@@ -107,7 +113,7 @@ describe('statement update scenarios:', function() {
       expect(statement('1').score).toEqual(10);
     });
     
-    it.only('when junk objection (3) gains support, the parent statement is not deactivated because the junk objection (3) is already tagged as junk', function() {
+    it('when junk objection (3) gains support, the parent statement is not deactivated because the junk objection (3) is already tagged as junk', function() {
       whenUpvoted(statement('3'));
       expect(statement('3').score).toEqual(5);
       expect(statement('2').tag).toBeUndefined();

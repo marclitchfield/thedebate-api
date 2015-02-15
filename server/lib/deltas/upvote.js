@@ -8,6 +8,9 @@ module.exports = (function() {
     },
 
     next: function(child, parent, childDelta) {
+      if (child.inactive === true) {
+        return createDelta(parent);
+      }
       if (child.type === 'objection') {
         return createDelta(parent, { 
           score: 0,
@@ -16,7 +19,6 @@ module.exports = (function() {
           }
         });
       }
-
       var childScoreDelta = childDelta.score * polarity(child);
       return createDelta(parent, {
         score: childScoreDelta,

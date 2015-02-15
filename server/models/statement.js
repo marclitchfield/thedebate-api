@@ -6,6 +6,7 @@ var Statement = new Schema({
   body: String,
   type: String,
   tag: String,
+  inactive: { type: Boolean, default: false },
   score: { type: Number, default: 0 },
   upvotes: { type: Number, default: 0 },
   scores: {
