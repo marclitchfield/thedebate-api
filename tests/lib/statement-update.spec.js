@@ -2,6 +2,10 @@ var statementUpdate = require('../../server/lib/statement-update');
 var givenStatement;
 
 describe('statement update scenarios:', function() {
+  beforeEach(function() {
+    this.addMatchers(customMatchers());
+  });
+  
   describe('given statement with unsupported junk objection', function() {
     beforeEach(function() {
       givenStatement =
@@ -15,7 +19,7 @@ describe('statement update scenarios:', function() {
     it('when junk objection (3) gains support, the parent statement (2) is deactivated', function() {
       whenUpvoted(statement('3'));
       expect(statement('3').score).toEqual(5);
-      expect(statement('2').tag).toEqual('junk');
+      expect(statement('2')).toBeInactiveWithTag('junk');
       expect(statement('1').score).toEqual(2);
     });
   });
@@ -42,7 +46,7 @@ describe('statement update scenarios:', function() {
       whenUpvoted(statement('4'));
       expect(statement('4').score).toEqual(1);
       expect(statement('3').score).toEqual(4);
-      expect(statement('2').tag).toBeNull();
+      expect(statement('2')).toBeActiveWithNoTag();
       expect(statement('1').score).toEqual(10);
     });
   });
@@ -62,8 +66,8 @@ describe('statement update scenarios:', function() {
     it('when junk objection (4) gains support, the parent junk objection (3) is deactivated', function() {
       whenUpvoted(statement('4'));
       expect(statement('4').score).toEqual(5);
-      expect(statement('3').tag).toEqual('junk');
-      expect(statement('2').tag).toBeNull();
+      expect(statement('3')).toBeInactiveWithTag('junk');
+      expect(statement('2')).toBeActiveWithNoTag();
       expect(statement('1').score).toEqual(10);
     });
   });
@@ -85,8 +89,8 @@ describe('statement update scenarios:', function() {
     it('when junk objection (4) loses support, the parent junk objection (3) is reactivated', function() {
       whenUpvoted(statement('5'));
       expect(statement('4').score).toEqual(4);
-      expect(statement('3').tag).toBeNull();
-      expect(statement('2').tag).toEqual('junk');
+      expect(statement('3')).toBeActiveWithNoTag();
+      expect(statement('2')).toBeInactiveWithTag('junk');
       expect(statement('1').score).toEqual(2);
     });
   });
@@ -108,15 +112,15 @@ describe('statement update scenarios:', function() {
     it('when junk objection (4) loses support, the parent junk objection (3) is untagged, but is not reactivated (it was never activated in the first place)', function() {
       whenUpvoted(statement('5'));
       expect(statement('4').score).toEqual(4);
-      expect(statement('3').tag).toBeNull();
-      expect(statement('2').tag).toBeUndefined();
+      expect(statement('3')).toBeActiveWithNoTag();
+      expect(statement('2')).toBeActiveWithNoTag();
       expect(statement('1').score).toEqual(10);
     });
     
     it('when junk objection (3) gains support, the parent statement is not deactivated because the junk objection (3) is already tagged as junk', function() {
       whenUpvoted(statement('3'));
       expect(statement('3').score).toEqual(5);
-      expect(statement('2').tag).toBeUndefined();
+      expect(statement('2')).toBeActiveWithNoTag();
       expect(statement('1').score).toEqual(10);
     });
   });
@@ -138,9 +142,9 @@ describe('statement update scenarios:', function() {
     it('when junk objection (5) gains support, the parent junk objection (4) is junk, and its parent junk objection (3) is not junk, so the statement (2) is deactivated', function() {
       whenUpvoted(statement('5'));
       expect(statement('5').score).toEqual(5);
-      expect(statement('4').tag).toEqual('junk');
-      expect(statement('3').tag).toBeNull();
-      expect(statement('2').tag).toEqual('junk');
+      expect(statement('4')).toBeInactiveWithTag('junk');
+      expect(statement('3')).toBeActiveWithNoTag();
+      expect(statement('2')).toBeInactiveWithTag('junk');
       expect(statement('1').score).toEqual(2);
     });
   });
@@ -150,17 +154,16 @@ describe('statement update scenarios:', function() {
       givenStatement =
         { id: '1',       score: 10, responses: [
           { id: '2',     score: 8, type: 'support', responses: [
-            { id: '3',   score: 4, type: 'objection', objection: { type: 'junk' }},
-            { id: '4',   score: 4, type: 'objection', objection: { type: 'junk' }}
+            { id: '3',   score: 12, type: 'objection', objection: { type: 'junk' }},
+            { id: '4',   score: 12, type: 'objection', objection: { type: 'junk' }}
           ]}
         ]};
     });
 
     it('when one junk objection (3) gains support, the other junk objection (4) is deactivated', function() {
       whenUpvoted(statement('3'));
-      expect(statement('4').tag).toEqual('obsolete');
-      expect(statement('3').score).toEqual(5);
-      expect(statement('2').tag).toEqual('junk');
+      expect(statement('4')).toBeInactiveWithTag('obsolete');
+      expect(statement('2')).toBeInactiveWithTag('junk');
       expect(statement('1').score).toEqual(2);
     });
   });
@@ -180,10 +183,10 @@ describe('statement update scenarios:', function() {
 
     it('when the supported junk objection (3) loses support, the other obsolete objection (5) is reactivated', function() {
       whenUpvoted(statement('4'));
-      expect(statement('5').tag).toBeNull();
+      expect(statement('5')).toBeActiveWithNoTag();
       expect(statement('4').score).toEqual(1);
       expect(statement('3').score).toEqual(4);
-      expect(statement('2').tag).toBeNull();
+      expect(statement('2')).toBeActiveWithNoTag();
       expect(statement('1').score).toEqual(2);
     });
   });
@@ -236,4 +239,18 @@ function populateStatement(statement) {
   statement.scores.opposition = statement.scores.opposition || 0;
   statement.scores.objection = statement.scores.objection || 0;
   return statement;
+}
+
+function customMatchers() {
+  return {
+    toBeInactiveWithTag: function(expected) {
+      this.message = function() { return [`Expected inactive=truthy, tag=${expected} but was inactive=${this.actual.inactive}, tag=${this.actual.tag}`]; };
+      return this.actual.inactive && this.actual.tag === expected;
+    },
+    
+    toBeActiveWithNoTag: function() {
+      this.message = function() { return [`Expected inactive=falsy, tag=falsy but was inactive=${this.actual.inactive}, tag=${this.actual.tag}`]; };
+      return !this.actual.inactive && !this.actual.tag;
+    }
+  };
 }
