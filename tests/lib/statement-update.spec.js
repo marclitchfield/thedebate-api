@@ -126,7 +126,7 @@ describe('statement update scenarios:', function() {
       givenStatement =
         { id: '1',         score: 10, responses: [
           { id: '2',       score: 8, type: 'support', responses: [
-            { id: '3',     score: 5, type: 'objection', tag: 'junk', objection: { type: 'junk' }, responses: [
+            { id: '3',     score: 5, type: 'objection', inactive: true, tag: 'junk', objection: { type: 'junk' }, responses: [
               { id: '4',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
                 { id: '5', score: 4, type: 'objection', objection: { type: 'junk' } }
               ]}
@@ -169,7 +169,7 @@ describe('statement update scenarios:', function() {
     beforeEach(function() {
       givenStatement =
         { id: '1',       score: 2, responses: [
-          { id: '2',     score: 8, type: 'support', tag: 'junk', responses: [
+          { id: '2',     score: 8, type: 'support', inactive: true, tag: 'junk', responses: [
             { id: '3',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
               { id: '4', score: 0, type: 'opposition' }
             ]},
