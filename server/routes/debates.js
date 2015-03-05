@@ -6,8 +6,7 @@ module.exports = function(server) {
     path: '/api/debates',
     handler: function (request, reply) {
       debates.list(reply);
-    },
-    config: { cache: { expiresIn: 30, privacy: 'private' } }
+    }
   });
 
   server.route({
@@ -15,8 +14,7 @@ module.exports = function(server) {
     path: '/api/debate/{id}',
     handler: function (request, reply) {
       debates.get(request.params.id, reply);
-    },
-    config: { cache: { expiresIn: 30, privacy: 'private' } }
+    }
   });
 
   server.route({
