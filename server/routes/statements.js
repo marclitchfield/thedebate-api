@@ -6,7 +6,8 @@ module.exports = function(server) {
     path: '/api/statement/{id}',
     handler: function (request, reply) {
       statements.get(request.params.id, reply);
-    }
+    },
+    config: { cache: { expiresIn: 30, privacy: 'private' } }
   });
 
   server.route({ 
@@ -22,7 +23,8 @@ module.exports = function(server) {
     path: '/api/statement/{id}/responses/{type?}',
     handler: function (request, reply) {
       statements.responses.list(request.params.id, request.params.type, reply);
-    }
+    },
+    config: { cache: { expiresIn: 30, privacy: 'private' } }
   });
 
   server.route({ 
