@@ -4,11 +4,21 @@ let _ = require('lodash');
 let createDelta = require('./deltas/create-delta');
 
 let objectionEffects = {
-  junk: {
-    threshold: 5,
-    isApplied: function(target) { return !!target.tag; },
-    applyEffect: function() { return { tag: 'junk', active: false }; },
-    revertEffect: function() { return { tag: null, active: true }; }
+  from: function(objection, target) {
+    return {
+      junk: {
+        threshold: 5,
+        isApplied: function() { return target.tag === 'junk'; },
+        applyEffect: function() { return { tag: 'junk', active: false }; },
+        revertEffect: function() { return { tag: null, active: true }; }
+      },
+      edit: {
+        threshold: 3,
+        isApplied: function() { return target.version === objection.edit.revisedVersion; },
+        applyEffect: function() { return { body: objection.edit.revisedBody, version: objection.edit.revisedVersion }; },
+        revertEffect: function() { return { body: objection.edit.originalBody, version: objection.edit.originalVersion }; }
+      }
+    }[objection.type];
   }
 };
 
@@ -43,14 +53,14 @@ function* objectionEffectDeltas(statement, delta) {
 
 function* activationDeltas(statement, objection, effectDelta) {
   let target = findStatement(statement, objection.chain[objection.chain.length - 1].id);
-  let effect = objectionEffects[objection.objection.type];
+  let effect = objectionEffects.from(objection.objection, target);
   let targetDelta;
-  if (effectDelta.active === false && effect.isApplied(target)) {
+  if (effectDelta.active === false && effect.isApplied()) {
     targetDelta = createDelta(target, effect.revertEffect());
     applyActivationEffects(statement, targetDelta);
     yield targetDelta;
   }
-  if (effectDelta.active === true && !effect.isApplied(target) && objection.score >= effect.threshold) {
+  if (effectDelta.active === true && !effect.isApplied() && objection.score >= effect.threshold) {
     targetDelta = createDelta(target, effect.applyEffect());
     applyActivationEffects(statement, targetDelta);
     yield targetDelta;
@@ -61,11 +71,11 @@ function* activationDeltas(statement, objection, effectDelta) {
 }
 
 function thresholdDelta(objection, scoreDelta, target) {
-  let effect = objectionEffects[objection.objection.type];
+  let effect = objectionEffects.from(objection.objection, target);
   if (effect !== undefined && scoreDelta.score !== 0) {
-    if (objection.score + scoreDelta.score >= effect.threshold && !effect.isApplied(target) && !objection.inactive) {
+    if (objection.score + scoreDelta.score >= effect.threshold && !effect.isApplied() && !objection.inactive) {
       return createDelta(target, effect.applyEffect());
-    } else if(objection.score + scoreDelta.score < effect.threshold && effect.isApplied(target) && !objection.inactive) {
+    } else if(objection.score + scoreDelta.score < effect.threshold && effect.isApplied() && !objection.inactive) {
       return createDelta(target, effect.revertEffect());
     }
   }

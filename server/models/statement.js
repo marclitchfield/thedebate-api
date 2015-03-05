@@ -6,6 +6,7 @@ var Statement = new Schema({
   body: String,
   type: String,
   tag: String,
+  version: String,
   inactive: { type: Boolean, default: false },
   score: { type: Number, default: 0 },
   upvotes: { type: Number, default: 0 },
@@ -19,7 +20,12 @@ var Statement = new Schema({
   responses: [{ type: ObjectId, ref: 'Statement' }],
   objection: {
     type: { type: String },
-    edit: { version: { type: Number } },
+    edit: { 
+      revisedVersion: String,
+      revisedBody: String,
+      originalVersion: String,
+      originalBody: String
+    },
     junk: {},
     logic: { fallacy: { type: String } }
   }

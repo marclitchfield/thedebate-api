@@ -6,191 +6,235 @@ describe('statement update scenarios:', function() {
     this.addMatchers(customMatchers());
   });
   
-  describe('given statement with unsupported junk objection', function() {
-    beforeEach(function() {
-      givenStatement =
-        { id: '1',     score: 10, responses: [
-          { id: '2',   score: 8, type: 'support', responses: [
-            { id: '3', score: 4, type: 'objection', objection: { type: 'junk' } }
-          ]}
-        ]};
-    });
-
-    it('when junk objection (3) gains support, the parent statement (2) is deactivated', function() {
-      whenUpvoted(statement('3'));
-      expect(statement('3').score).toEqual(5);
-      expect(statement('2')).toBeInactiveWithTag('junk');
-      expect(statement('1').score).toEqual(2);
-    });
-  });
-
-  describe('given statement with supported junk objection', function() {
-    beforeEach(function() {
-      givenStatement =
-        { id: '1',       score: 2, responses: [
-          { id: '2',     score: 8, type: 'support', tag: 'junk', inactive: true, responses: [
-            { id: '3',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
-              { id: '4', score: 0, type: 'opposition' }
+  describe('junk objections:', function() {
+    describe('given statement with unsupported junk objection', function() {
+      beforeEach(function() {
+        givenStatement =
+          { id: '1',     score: 10, responses: [
+            { id: '2',   score: 8, type: 'support', responses: [
+              { id: '3', score: 4, type: 'objection', objection: { type: 'junk' } }
             ]}
-          ]}
-        ]};
+          ]};
+      });
+
+      it('when junk objection (3) gains support, the parent statement (2) is deactivated', function() {
+        whenUpvoted(statement('3'));
+        expect(statement('3').score).toEqual(5);
+        expect(statement('2')).toBeInactiveWithTag('junk');
+        expect(statement('1').score).toEqual(2);
+      });
     });
 
-    it('when inactive statement (2) is upvoted, the parent statement (1) does not change', function() {
-      whenUpvoted(statement('2'));
-      expect(statement('2').score).toEqual(9);
-      expect(statement('1').score).toEqual(2);
-    });
-
-    it('when junk objection (3) loses support, the parent statement (2) is reactivated', function() {
-      whenUpvoted(statement('4'));
-      expect(statement('4').score).toEqual(1);
-      expect(statement('3').score).toEqual(4);
-      expect(statement('2')).toBeActiveWithNoTag();
-      expect(statement('1').score).toEqual(10);
-    });
-  });
-
-  describe('given an unsupported junk objection to a supported junk objection', function() {
-    beforeEach(function() {
-      givenStatement =
-        { id: '1',       score: 2, responses: [
-          { id: '2',     score: 8, type: 'support', tag: 'junk', inactive: true, responses: [
-            { id: '3',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
-              { id: '4', score: 4, type: 'objection', objection: { type: 'junk'} }
-            ]}
-          ]}
-        ]};
-    });
-
-    it('when junk objection (4) gains support, the parent junk objection (3) is deactivated', function() {
-      whenUpvoted(statement('4'));
-      expect(statement('4').score).toEqual(5);
-      expect(statement('3')).toBeInactiveWithTag('junk');
-      expect(statement('2')).toBeActiveWithNoTag();
-      expect(statement('1').score).toEqual(10);
-    });
-  });
-
-  describe('given a supported junk objection to a supported junk objection', function() {
-    beforeEach(function() {
-      givenStatement =
-        { id: '1',         score: 10, responses: [
-          { id: '2',       score: 8, type: 'support', responses: [
-            { id: '3',     score: 5, type: 'objection', tag: 'junk', inactive: true, objection: { type: 'junk' }, responses: [
-              { id: '4',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
-                { id: '5', score: 0, type: 'opposition' }
+    describe('given statement with supported junk objection', function() {
+      beforeEach(function() {
+        givenStatement =
+          { id: '1',       score: 2, responses: [
+            { id: '2',     score: 8, type: 'support', tag: 'junk', inactive: true, responses: [
+              { id: '3',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
+                { id: '4', score: 0, type: 'opposition' }
               ]}
             ]}
-          ]}
-        ]};
+          ]};
+      });
+
+      it('when inactive statement (2) is upvoted, the parent statement (1) does not change', function() {
+        whenUpvoted(statement('2'));
+        expect(statement('2').score).toEqual(9);
+        expect(statement('1').score).toEqual(2);
+      });
+
+      it('when junk objection (3) loses support, the parent statement (2) is reactivated', function() {
+        whenUpvoted(statement('4'));
+        expect(statement('4').score).toEqual(1);
+        expect(statement('3').score).toEqual(4);
+        expect(statement('2')).toBeActiveWithNoTag();
+        expect(statement('1').score).toEqual(10);
+      });
     });
 
-    it('when junk objection (4) loses support, the parent junk objection (3) is reactivated', function() {
-      whenUpvoted(statement('5'));
-      expect(statement('4').score).toEqual(4);
-      expect(statement('3')).toBeActiveWithNoTag();
-      expect(statement('2')).toBeInactiveWithTag('junk');
-      expect(statement('1').score).toEqual(2);
-    });
-  });
-  
-  describe('given a supported junk objection to an unsupported junk objection', function() {
-    beforeEach(function() {
-      givenStatement =
-        { id: '1',         score: 10, responses: [
-          { id: '2',       score: 8, type: 'support', responses: [
-            { id: '3',     score: 4, type: 'objection', tag: 'junk', inactive: true, objection: { type: 'junk' }, responses: [
-              { id: '4',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
-                { id: '5', score: 0, type: 'opposition' }
+    describe('given an unsupported junk objection to a supported junk objection', function() {
+      beforeEach(function() {
+        givenStatement =
+          { id: '1',       score: 2, responses: [
+            { id: '2',     score: 8, type: 'support', tag: 'junk', inactive: true, responses: [
+              { id: '3',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
+                { id: '4', score: 4, type: 'objection', objection: { type: 'junk'} }
               ]}
             ]}
-          ]}
-        ]};
+          ]};
+      });
+
+      it('when junk objection (4) gains support, the parent junk objection (3) is deactivated', function() {
+        whenUpvoted(statement('4'));
+        expect(statement('4').score).toEqual(5);
+        expect(statement('3')).toBeInactiveWithTag('junk');
+        expect(statement('2')).toBeActiveWithNoTag();
+        expect(statement('1').score).toEqual(10);
+      });
     });
 
-    it('when junk objection (4) loses support, the parent junk objection (3) is untagged, but is not reactivated (it was never activated in the first place)', function() {
-      whenUpvoted(statement('5'));
-      expect(statement('4').score).toEqual(4);
-      expect(statement('3')).toBeActiveWithNoTag();
-      expect(statement('2')).toBeActiveWithNoTag();
-      expect(statement('1').score).toEqual(10);
+    describe('given a supported junk objection to a supported junk objection', function() {
+      beforeEach(function() {
+        givenStatement =
+          { id: '1',         score: 10, responses: [
+            { id: '2',       score: 8, type: 'support', responses: [
+              { id: '3',     score: 5, type: 'objection', tag: 'junk', inactive: true, objection: { type: 'junk' }, responses: [
+                { id: '4',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
+                  { id: '5', score: 0, type: 'opposition' }
+                ]}
+              ]}
+            ]}
+          ]};
+      });
+
+      it('when junk objection (4) loses support, the parent junk objection (3) is reactivated', function() {
+        whenUpvoted(statement('5'));
+        expect(statement('4').score).toEqual(4);
+        expect(statement('3')).toBeActiveWithNoTag();
+        expect(statement('2')).toBeInactiveWithTag('junk');
+        expect(statement('1').score).toEqual(2);
+      });
     });
+
+    describe('given a supported junk objection to an unsupported junk objection', function() {
+      beforeEach(function() {
+        givenStatement =
+          { id: '1',         score: 10, responses: [
+            { id: '2',       score: 8, type: 'support', responses: [
+              { id: '3',     score: 4, type: 'objection', tag: 'junk', inactive: true, objection: { type: 'junk' }, responses: [
+                { id: '4',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
+                  { id: '5', score: 0, type: 'opposition' }
+                ]}
+              ]}
+            ]}
+          ]};
+      });
+
+      it('when junk objection (4) loses support, the parent junk objection (3) is untagged, but is not reactivated (it was never activated in the first place)', function() {
+        whenUpvoted(statement('5'));
+        expect(statement('4').score).toEqual(4);
+        expect(statement('3')).toBeActiveWithNoTag();
+        expect(statement('2')).toBeActiveWithNoTag();
+        expect(statement('1').score).toEqual(10);
+      });
+
+      it('when junk objection (3) gains support, the parent statement is not deactivated because the junk objection (3) is already tagged as junk', function() {
+        whenUpvoted(statement('3'));
+        expect(statement('3').score).toEqual(5);
+        expect(statement('2')).toBeActiveWithNoTag();
+        expect(statement('1').score).toEqual(10);
+      });
+    });
+
+    describe('given unsupported junk objection to supported junk objection to supported junk objection', function() {
+      beforeEach(function() {
+        givenStatement =
+          { id: '1',         score: 10, responses: [
+            { id: '2',       score: 8, type: 'support', responses: [
+              { id: '3',     score: 5, type: 'objection', inactive: true, tag: 'junk', objection: { type: 'junk' }, responses: [
+                { id: '4',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
+                  { id: '5', score: 4, type: 'objection', objection: { type: 'junk' } }
+                ]}
+              ]}
+            ]}
+          ]};
+      });
+
+      it('when junk objection (5) gains support, the parent junk objection (4) is junk, and its parent junk objection (3) is not junk, so the statement (2) is deactivated', function() {
+        whenUpvoted(statement('5'));
+        expect(statement('5').score).toEqual(5);
+        expect(statement('4')).toBeInactiveWithTag('junk');
+        expect(statement('3')).toBeActiveWithNoTag();
+        expect(statement('2')).toBeInactiveWithTag('junk');
+        expect(statement('1').score).toEqual(2);
+      });
+    });
+
+    xdescribe('given statement with two unsupported junk objections', function() {
+      beforeEach(function() {
+        givenStatement =
+          { id: '1',       score: 10, responses: [
+            { id: '2',     score: 8, type: 'support', responses: [
+              { id: '3',   score: 12, type: 'objection', objection: { type: 'junk' }},
+              { id: '4',   score: 12, type: 'objection', objection: { type: 'junk' }}
+            ]}
+          ]};
+      });
+
+      it('when one junk objection (3) gains support, the other junk objection (4) is deactivated', function() {
+        whenUpvoted(statement('3'));
+        expect(statement('4')).toBeInactiveWithTag('obsolete');
+        expect(statement('2')).toBeInactiveWithTag('junk');
+        expect(statement('1').score).toEqual(2);
+      });
+    });
+
+    xdescribe('given statement with supported and unsupported junk objections', function() {
+      beforeEach(function() {
+        givenStatement =
+          { id: '1',       score: 2, responses: [
+            { id: '2',     score: 8, type: 'support', inactive: true, tag: 'junk', responses: [
+              { id: '3',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
+                { id: '4', score: 0, type: 'opposition' }
+              ]},
+              { id: '5',   score: 4, type: 'objection', objection: { type: 'junk' }, tag: 'obsolete'}
+            ]}
+          ]};
+      });
+
+      it('when the supported junk objection (3) loses support, the other obsolete objection (5) is reactivated', function() {
+        whenUpvoted(statement('4'));
+        expect(statement('5')).toBeActiveWithNoTag();
+        expect(statement('4').score).toEqual(1);
+        expect(statement('3').score).toEqual(4);
+        expect(statement('2')).toBeActiveWithNoTag();
+        expect(statement('1').score).toEqual(2);
+      });
+    });
+  });
+
+  describe('edit objections:', function() {
     
-    it('when junk objection (3) gains support, the parent statement is not deactivated because the junk objection (3) is already tagged as junk', function() {
-      whenUpvoted(statement('3'));
-      expect(statement('3').score).toEqual(5);
-      expect(statement('2')).toBeActiveWithNoTag();
-      expect(statement('1').score).toEqual(10);
+    describe('given statement with unsupported edit objection', function() {
+      beforeEach(function() {
+        givenStatement =
+          { id: '1',   body: 'original-body', version: 'original-version', responses: [
+            { id: '2', score: 2, type: 'objection', 
+              objection: { 
+                revisedVersion: 'revised-version', revisedBody: 'revised-body',
+                originalVersion: 'original-version', originalBody: 'original-body'
+              }
+            }
+          ]};
+      });
+      
+      it('when edit objection (2) gains support, the parent statement is revised', function() {
+        whenUpvoted(statement('2'));
+        expect(statement('1').body).toEqual('revised-body');
+        expect(statement('1').version).toEqual('revised-version');
+      });
+    });
+ 
+    describe('given statement with supported edit objection', function() {
+      beforeEach(function() {
+        givenStatement =
+          { id: '1',   body: 'revised-body', version: 'revised-version', responses: [
+            { id: '2', score: 3, type: 'objection', 
+              objection: { 
+                revisedVersion: 'revised-version', revisedBody: 'revised-body',
+                originalVersion: 'original-version', originalBody: 'original-body'
+              }
+            }
+          ]};
+      });
+      
+      it('when edit objection (2) loses support, the parent statement\'s revision is reverted', function() {
+        whenUpvoted(statement('2'));
+        expect(statement('1').body).toEqual('original-body');
+        expect(statement('1').version).toEqual('original-version');
+      });
     });
   });
-  
-  describe('given unsupported junk objection to supported junk objection to supported junk objection', function() {
-    beforeEach(function() {
-      givenStatement =
-        { id: '1',         score: 10, responses: [
-          { id: '2',       score: 8, type: 'support', responses: [
-            { id: '3',     score: 5, type: 'objection', inactive: true, tag: 'junk', objection: { type: 'junk' }, responses: [
-              { id: '4',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
-                { id: '5', score: 4, type: 'objection', objection: { type: 'junk' } }
-              ]}
-            ]}
-          ]}
-        ]};
-    });
-
-    it('when junk objection (5) gains support, the parent junk objection (4) is junk, and its parent junk objection (3) is not junk, so the statement (2) is deactivated', function() {
-      whenUpvoted(statement('5'));
-      expect(statement('5').score).toEqual(5);
-      expect(statement('4')).toBeInactiveWithTag('junk');
-      expect(statement('3')).toBeActiveWithNoTag();
-      expect(statement('2')).toBeInactiveWithTag('junk');
-      expect(statement('1').score).toEqual(2);
-    });
-  });
-
-  xdescribe('given statement with two unsupported junk objections', function() {
-    beforeEach(function() {
-      givenStatement =
-        { id: '1',       score: 10, responses: [
-          { id: '2',     score: 8, type: 'support', responses: [
-            { id: '3',   score: 12, type: 'objection', objection: { type: 'junk' }},
-            { id: '4',   score: 12, type: 'objection', objection: { type: 'junk' }}
-          ]}
-        ]};
-    });
-
-    it('when one junk objection (3) gains support, the other junk objection (4) is deactivated', function() {
-      whenUpvoted(statement('3'));
-      expect(statement('4')).toBeInactiveWithTag('obsolete');
-      expect(statement('2')).toBeInactiveWithTag('junk');
-      expect(statement('1').score).toEqual(2);
-    });
-  });
-
-  xdescribe('given statement with supported and unsupported junk objections', function() {
-    beforeEach(function() {
-      givenStatement =
-        { id: '1',       score: 2, responses: [
-          { id: '2',     score: 8, type: 'support', inactive: true, tag: 'junk', responses: [
-            { id: '3',   score: 5, type: 'objection', objection: { type: 'junk' }, responses: [
-              { id: '4', score: 0, type: 'opposition' }
-            ]},
-            { id: '5',   score: 4, type: 'objection', objection: { type: 'junk' }, tag: 'obsolete'}
-          ]}
-        ]};
-    });
-
-    it('when the supported junk objection (3) loses support, the other obsolete objection (5) is reactivated', function() {
-      whenUpvoted(statement('4'));
-      expect(statement('5')).toBeActiveWithNoTag();
-      expect(statement('4').score).toEqual(1);
-      expect(statement('3').score).toEqual(4);
-      expect(statement('2')).toBeActiveWithNoTag();
-      expect(statement('1').score).toEqual(2);
-    });
-  });
-
 });
 
 function statement(id) {
