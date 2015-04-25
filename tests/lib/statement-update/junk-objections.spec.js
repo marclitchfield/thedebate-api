@@ -151,13 +151,13 @@ describe('junk objections:', function() {
 
   xdescribe('given statement with two unsupported junk objections:', function() {
     beforeEach(function() {
-      givenStatement =
+      statement.given(
         { id: '1',       score: 10, responses: [
           { id: '2',     score: 8, type: 'support', responses: [
             { id: '3',   score: 12, type: 'objection', objection: { type: 'junk' }},
             { id: '4',   score: 12, type: 'objection', objection: { type: 'junk' }}
           ]}
-        ]};
+        ]});
     });
 
     it('when one junk objection (3) gains support, the other junk objection (4) is deactivated', function() {

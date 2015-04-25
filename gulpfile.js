@@ -3,7 +3,9 @@ var gulp = require('gulp'),
   changed = require('gulp-changed'),
   del = require('del'),
   path = require('path'),
-  config = require('./package.json');
+  config = require('./package.json'),
+  shell = require('gulp-shell'),
+  series = require('gulp-series');
 
 var testUrl = 'http://localhost:9002';
 
@@ -43,6 +45,12 @@ gulp.task('lint-tests', function() {
     .pipe(jshint.reporter('default'));
 });
 
+gulp.task('test', shell.task(['jasmine-node tests']));
+
+gulp.task('build-test', ['lint-tests', 'server'], function() {
+  gulp.run('test');
+});
+
 gulp.task('server node_modules', function() {
   // copy node_modules listed in paths.server.modules to node_modules in paths.dist.server
   return gulp.src(Object.keys(config.dependencies).map(function(m) {
@@ -55,6 +63,10 @@ gulp.task('server node_modules', function() {
 gulp.task('watch', function() {
   gulp.watch(paths.server.files, ['server']);
   gulp.watch(paths.test.files, ['lint-tests']);
+});
+
+gulp.task('watch-test', function() {
+  gulp.watch([paths.test.files, paths.server.files], ['build-test']);
 });
 
 gulp.task('default', function() {

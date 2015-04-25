@@ -1,4 +1,4 @@
-var createDelta = require('./create-delta');
+var createDelta = require('./delta');
 
 module.exports = (function() {
 

@@ -67,7 +67,9 @@ Statement.statics.summarize = function(statements) {
 };
 
 Statement.statics.fromJSON = function(obj) {
-  obj.debate = obj.debate.id;
+  if (obj.debate) {
+    obj.debate = obj.debate.id;
+  }
   obj.chain = (obj.chain || []).map(function(statement) { return statement.id; });
   obj.responses = (obj.responses || []).map(function(response) { return response.id; });
 

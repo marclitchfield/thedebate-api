@@ -28,7 +28,7 @@ module.exports = function() {
       populate(Statement.findById(id)).exec(function(err, statement) {
         if (err) { return cb(err, undefined); }
         updateApplyDeltas('upvote', statement, cb);
-      });
+      }); 
     },
 
     responses: {

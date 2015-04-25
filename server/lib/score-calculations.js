@@ -17,7 +17,7 @@ module.exports = {
     let reactivateDelta = require('./deltas/reactivate');
     let deltas = walkChain(response, reactivateDelta.init, reactivateDelta.next);
     deltas.shift();
-    return deltas;
+    return deltas; 
   }
 };
 
